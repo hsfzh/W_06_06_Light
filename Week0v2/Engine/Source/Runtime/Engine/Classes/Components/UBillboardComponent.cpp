@@ -4,6 +4,7 @@
 #include "Define.h"
 #include <DirectXMath.h>
 
+#include "EditorEngine.h"
 #include "Engine/World.h"
 #include "Math/MathUtility.h"
 #include "UnrealEd/EditorViewportClient.h"
@@ -17,21 +18,11 @@ UBillboardComponent::UBillboardComponent()
 
 UBillboardComponent::~UBillboardComponent()
 {
-	if (vertexTextureBuffer)
-	{
-		vertexTextureBuffer->Release();
-		vertexTextureBuffer = nullptr;
-	}
-	if (indexTextureBuffer)
-	{
-		indexTextureBuffer->Release();
-		indexTextureBuffer = nullptr;
-	}
+
 }
 
-UBillboardComponent::UBillboardComponent(const UBillboardComponent& other) : UPrimitiveComponent(other),
-vertexTextureBuffer(other.vertexTextureBuffer),indexTextureBuffer(other.indexTextureBuffer), numIndices(other.numIndices),
-numVertices(other.numVertices), finalIndexU(other.finalIndexU), finalIndexV(other.finalIndexV),Texture(other.Texture)
+UBillboardComponent::UBillboardComponent(const UBillboardComponent& other)
+    : UPrimitiveComponent(other), finalIndexU(other.finalIndexU), finalIndexV(other.finalIndexV), Texture(other.Texture)
 {
 }
 
@@ -122,17 +113,15 @@ void UBillboardComponent::PostDuplicate()
 
 void UBillboardComponent::CreateQuadTextureVertexBuffer()
 {
-	numVertices = sizeof(quadTextureVertices) / sizeof(FVertexTexture);
-	numIndices = sizeof(quadTextureInices) / sizeof(uint32);
-    vertexTextureBuffer = UEditorEngine::renderer.GetResourceManager().CreateVertexBuffer(quadTextureVertices, sizeof(quadTextureVertices));
-	indexTextureBuffer = UEditorEngine::renderer.GetResourceManager().CreateIndexBuffer(quadTextureInices, sizeof(quadTextureInices));
+    ID3D11Buffer* VB = UEditorEngine::renderer.GetResourceManager()->CreateImmutableVertexBuffer(quadTextureVertices, sizeof(quadTextureVertices));
+    UEditorEngine::renderer.GetResourceManager()->AddOrSetVertexBuffer(TEXT("QuadVB"), VB);
+    UEditorEngine::renderer.MappingVBTopology(TEXT("Quad"), TEXT("QuadVB"), sizeof(FVertexTexture), 4);
 
-	if (!vertexTextureBuffer) {
-		Console::GetInstance().AddLog(LogLevel::Warning, "Buffer Error");
-	}
-	if (!indexTextureBuffer) {
-		Console::GetInstance().AddLog(LogLevel::Warning, "Buffer Error");
-	}
+    ID3D11Buffer* IB = UEditorEngine::renderer.GetResourceManager()->CreateIndexBuffer(quadTextureInices, sizeof(quadTextureInices) / sizeof(uint32));
+    UEditorEngine::renderer.GetResourceManager()->AddOrSetIndexBuffer(TEXT("QuadIB"), IB);
+    UEditorEngine::renderer.MappingIB(TEXT("Quad"), TEXT("QuadIB"), sizeof(quadTextureInices) / sizeof(uint32));
+
+    VBIBTopologyMappingName = TEXT("Quad");
 }
 
 std::shared_ptr<FActorComponentInfo> UBillboardComponent::GetActorComponentInfo()
@@ -187,7 +176,7 @@ bool UBillboardComponent::CheckPickingOnNDC(const TArray<FVector>& checkQuad, fl
 		FVector4 v = FVector4(checkQuad[i].x, checkQuad[i].y, checkQuad[i].z, 1.0f);
 		FVector4 clipPos = FMatrix::TransformVector(v, MVP);
 		
-		if (clipPos.a != 0)	clipPos = clipPos/clipPos.a;
+		if (clipPos.w != 0)	clipPos = clipPos/clipPos.w;
 
 		minX = FMath::Min(minX, clipPos.x);
 		maxX = FMath::Max(maxX, clipPos.x);

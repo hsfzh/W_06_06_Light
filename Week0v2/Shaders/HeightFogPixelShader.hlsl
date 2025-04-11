@@ -1,4 +1,4 @@
-cbuffer CameraConstant : register(b0)
+cbuffer FCameraConstant : register(b0)
 {
     matrix ViewMatrix;
     matrix ProjMatrix;
@@ -11,14 +11,14 @@ cbuffer CameraConstant : register(b0)
     float FarPlane;
 };
 
-cbuffer ViewportInfo : register(b1)
+cbuffer FViewportInfo : register(b1)
 {
     float2 ViewportSize;
     float2 ViewportOffset;
 }
 
-cbuffer FogParams : register(b6)
-{    
+cbuffer FFogParams : register(b6)
+{  
     float3 FogColor;
     float FogDensity;
     float FogStart;

@@ -43,15 +43,18 @@ class UParticleSubUVComp : public UBillboardComponent
 
 public:
     UParticleSubUVComp();
+    UParticleSubUVComp(const UParticleSubUVComp& other);
     virtual ~UParticleSubUVComp() override;
 
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
 
+    UObject* Duplicate() const override;
+    void DuplicateSubObjects(const UObject* Source) override;
     void SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn);
 
-    ID3D11Buffer* vertexSubUVBuffer;
-    UINT numTextVertices;
+    // ID3D11Buffer* vertexSubUVBuffer;
+    //UINT numTextVertices;
 
 public:
     virtual std::shared_ptr<FActorComponentInfo> GetActorComponentInfo();

@@ -1,5 +1,7 @@
 #include "Engine/Source/Editor/PropertyEditor/ShowFlags.h"
 #include "UParticleSubUVComp.h"
+
+#include "EditorEngine.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "Engine/World.h"
 #include "LevelEditor/SLevelEditor.h"
@@ -10,20 +12,28 @@ UParticleSubUVComp::UParticleSubUVComp()
     bIsLoop = true;
 }
 
+UParticleSubUVComp::UParticleSubUVComp(const UParticleSubUVComp& other): UBillboardComponent(other),
+vertexSubUVBuffer(other.vertexSubUVBuffer),
+numTextVertices(numTextVertices),
+bIsLoop(other.bIsLoop),
+indexU(other.indexU),
+indexV(other.indexV),
+second(other.second),
+CellsPerColumn(other.CellsPerColumn),
+CellsPerRow(other.CellsPerRow)
+{
+}
+
 UParticleSubUVComp::~UParticleSubUVComp()
 {
-	if (vertexSubUVBuffer)
-	{
-		vertexSubUVBuffer->Release();
-		vertexSubUVBuffer = nullptr;
-	}
+
 }
 
 void UParticleSubUVComp::InitializeComponent()
 {
 	Super::InitializeComponent();
-	UEditorEngine::renderer.GetConstantBufferUpdater().UpdateSubUVConstant(UEditorEngine::renderer.SubUVConstantBuffer, 0, 0);
-	UEditorEngine::renderer.PrepareSubUVConstant();
+	// UEditorEngine::renderer.GetConstantBufferUpdater().UpdateSubUVConstant(UEditorEngine::renderer.SubUVConstantBuffer, 0, 0);
+	// UEditorEngine::renderer.PrepareSubUVConstant();
 }
 
 void UParticleSubUVComp::TickComponent(float DeltaTime)
@@ -69,6 +79,18 @@ void UParticleSubUVComp::TickComponent(float DeltaTime)
 	finalIndexV = float(indexV) * normalHeightOffset;
 }
 
+UObject* UParticleSubUVComp::Duplicate() const
+{
+    UParticleSubUVComp* Cloned = FObjectFactory::ConstructObjectFrom(this);
+    Cloned->DuplicateSubObjects(this);
+    return Cloned;
+}
+
+void UParticleSubUVComp::DuplicateSubObjects(const UObject* Source)
+{
+    UBillboardComponent::DuplicateSubObjects(Source);
+}
+
 void UParticleSubUVComp::SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn)
 {
 	CellsPerRow = _cellsPerRow;
@@ -98,14 +120,6 @@ void UParticleSubUVComp::LoadAndConstruct(const FActorComponentInfo& Info)
 
 void UParticleSubUVComp::UpdateVertexBuffer(const TArray<FVertexTexture>& vertices)
 {
-	/*
-	ID3D11DeviceContext* context = FEngineLoop::graphicDevice.DeviceContext;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
-	context->Map(vertexTextureBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	memcpy(mappedResource.pData, vertices.GetData(), vertices.Num() * sizeof(FVertexTexture));
-	context->Unmap(vertexTextureBuffer, 0);
-	*/
 
 }
 
@@ -129,6 +143,9 @@ void UParticleSubUVComp::CreateSubUVVertexBuffer()
 	vertices[3].u = normalWidthOffset;
 	vertices[3].v = normalHeightOffset;
 
-	vertexSubUVBuffer = UEditorEngine::renderer.GetResourceManager().CreateVertexBuffer(vertices);
-	numTextVertices = static_cast<UINT>(vertices.Num());
+	ID3D11Buffer* VB = UEditorEngine::renderer.GetResourceManager()->CreateImmutableVertexBuffer<FVertexTexture>(vertices);
+    UEditorEngine::renderer.GetResourceManager()->AddOrSetVertexBuffer(TEXT("QuadVB"), VB);
+    UEditorEngine::renderer.MappingVBTopology(TEXT("Quad"), TEXT("QuadVB"), sizeof(FVertexTexture), 4);
+
+    VBIBTopologyMappingName = TEXT("Quad");
 }

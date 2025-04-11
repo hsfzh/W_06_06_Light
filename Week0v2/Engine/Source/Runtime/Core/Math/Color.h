@@ -16,7 +16,7 @@ struct FLinearColor
 
     FLinearColor() : R(0), G(0), B(0), A(0) {}
     FLinearColor(float InR, float InG, float InB, float InA = 1.0f) : R(InR), G(InG), B(InB), A(InA) {}
-
+    
     FLinearColor operator+(const FLinearColor& ColorB) const
     {
         return FLinearColor(R + ColorB.R, G + ColorB.G, B + ColorB.B, A + ColorB.A);

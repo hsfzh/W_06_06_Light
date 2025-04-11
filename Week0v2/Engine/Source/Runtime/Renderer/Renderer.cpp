@@ -10,7 +10,7 @@
 #include "Components/UParticleSubUVComp.h"
 #include "Components/UText.h"
 #include "Components/Material/Material.h"
-#include "Components/HeightFogComponent.h"
+#include "Components/FogComponent.h"
 #include "D3D11RHI/GraphicDevice.h"
 #include "Launch/EditorEngine.h"
 #include "Math/JungleMath.h"
@@ -38,10 +38,13 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
 
     // temp
     D3D11_SAMPLER_DESC sampDesc = {};
-    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
     sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
     sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    sampDesc.MinLOD = 0;
+    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
     Graphics->Device->CreateSamplerState(&sampDesc, &DebugDepthSRVSampler);
 
 }
@@ -199,7 +202,7 @@ void FRenderer::CreateConstantBuffer()
     CameraConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FCameraConstants));
     ViewportConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FViewportConstants));
     DepthToWorldBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FDepthToWorldConstants));
-    FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FHeightFogConstants));
+    FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFogConstants));
 }
 
 void FRenderer::ReleaseConstantBuffer()
@@ -310,15 +313,10 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
     ChangeViewMode(ActiveViewport->GetViewMode());
 
-    //RenderPostProcess(World, ActiveViewport);
-    // 0. 광원 렌더
-    RenderLight(World, ActiveViewport);
-
     // 1. 배치 렌더
     UPrimitiveBatch::GetInstance().RenderBatch(ConstantBuffer, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix());
 
     // 2. 스태틱 메시 렌더
-
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))
         RenderStaticMeshes(World, ActiveViewport);
 
@@ -328,7 +326,9 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
 
     // 4. 기즈모 렌더
     RenderGizmos(World, ActiveViewport);
-
+    
+    // 0. 광원 렌더
+    //RenderLight(World, ActiveViewport);
 
     // 6. 포스트 프로세스
     RenderPostProcess(World, ActiveViewport, ActiveViewport);
@@ -506,7 +506,6 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
 
     for (auto GizmoComp : GizmoObjs)
     {
-
         if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowX ||
             GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowY ||
             GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
@@ -808,53 +807,52 @@ void FRenderer::UpdateLinePrimitveCountBuffer(int numBoundingBoxes, int numCones
 void FRenderer::RenderHeightFog(std::shared_ptr<FEditorViewportClient> ActiveViewport, std::shared_ptr<FEditorViewportClient> CurrentViewport)
 {
     // 활성화된 Height Fog 컴포넌트 찾기
-    UHeightFogComponent* HeightFogComp = nullptr;
-    for (const auto& comp: TObjectRange<UHeightFogComponent>() )
+    UFogComponent* FogComp = nullptr;
+    bool bIsFogOn = false;
+    for (const auto& comp: TObjectRange<UFogComponent>() )
     {
-        HeightFogComp = comp;
+        FogComp = comp;
+        bIsFogOn = true;
     }
-
-    if (!HeightFogComp) return;
-    if (!HeightFogComp->bIsActive) return;
-
+    
     Graphics->DeviceContext->VSSetShader(HeightFogVertexShader, nullptr, 0);
     Graphics->DeviceContext->PSSetShader(HeightFogPixelShader, nullptr, 0);
 
     Graphics->DeviceContext->PSSetSamplers(0, 1, &DebugDepthSRVSampler);
 
-    // Fog Constant buffer update
-    FHeightFogConstants fogParams;
-    fogParams.FogDensity = HeightFogComp->FogDensity;
-    fogParams.HeightFogStart = HeightFogComp->HeightFogStart;
-    fogParams.HeightFogEnd = HeightFogComp->HeightFogEnd;
-    fogParams.DistanceFogNear = HeightFogComp->DistanceFogNear;
-    fogParams.DistanceFogFar = HeightFogComp->DistanceFogFar;
-    fogParams.MaxOpacity = HeightFogComp->FogMaxOpacity;
-    fogParams.InscatteringColor = FLinearColor(
-        HeightFogComp->FogInscatteringColor.R,
-        HeightFogComp->FogInscatteringColor.G,
-        HeightFogComp->FogInscatteringColor.B,
-        HeightFogComp->FogInscatteringColor.A
-    );
-    fogParams.DirectionalInscatteringColor = FLinearColor(
-        HeightFogComp->DirectionalInscatteringColor.R,
-        HeightFogComp->DirectionalInscatteringColor.G,
-        HeightFogComp->DirectionalInscatteringColor.B,
-        HeightFogComp->DirectionalInscatteringColor.A
-    );
-    // 현재 0, 0, -1 방향의 가상의 Directional light로 고정함
-    // Unreal의 경우 Default Directional light(Sun)의 값을 따라가는 것으로 보임
-    // 실제 Directional light를 가져오도록 할 지 고려, 또한 Directional light이 2개 이상일 때는 어떻게 처리할지?
-    fogParams.DirectionalLightDirection = HeightFogComp->DirectionalLightDirection;
-    fogParams.DirectionalInscatteringExponent = HeightFogComp->DirectionalInscatteringExponent;
-    fogParams.DirectionalInscatteringStartDistance = HeightFogComp->DirectionalInscatteringStartDistance;
-    fogParams.IsExponential = HeightFogComp->bIsExponential ? 1 : 0;
+    if (FogConstantBuffer)
+    {
+        bool bIsFogOn = false;
+        if (FogComp)
+        {
+            bIsFogOn = true;
+        }
+        
+        D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
 
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    Graphics->DeviceContext->Map(FogConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    memcpy(mappedResource.pData, &fogParams, sizeof(FHeightFogConstants));
-    Graphics->DeviceContext->Unmap(FogConstantBuffer, 0);
+        Graphics->DeviceContext->Map(FogConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+        FFogConstants* constants = (FFogConstants*)constantbufferMSR.pData;
+        {
+            constants->bIsFogOn = static_cast<int>(bIsFogOn);
+            if (bIsFogOn)
+            {
+                constants->Color = FogComp->Color;
+                constants->Density = FogComp->Density;
+                constants->FogStart = FogComp->Start;
+                constants->FogEnd = FogComp->End;
 
+                constants->FogZPosition = FogComp->GetWorldLocation().z;
+                constants->HeightFallOff = FogComp->HeightFallOff;
+                constants->FogBaseHeight = FogComp->BaseHeight;
+                constants->bIsHeightFog = static_cast<int>(FogComp->bIsHeight);
+
+                constants->ScatteringIntensity = FogComp->ScatteringIntensity;
+                constants->LightShaftDensity = FogComp->LightShaftDensity;
+            }
+        }
+        Graphics->DeviceContext->Unmap(FogConstantBuffer, 0);
+    }
+    
     FViewportConstants ViewportConstants;
     ViewportConstants.ViewportWidth = CurrentViewport->Viewport->GetViewport().Width / Graphics->screenWidth;
     ViewportConstants.ViewportHeight = CurrentViewport->Viewport->GetViewport().Height / Graphics->screenHeight;
@@ -873,6 +871,7 @@ void FRenderer::RenderHeightFog(std::shared_ptr<FEditorViewportClient> ActiveVie
     Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &CameraConstantBuffer);
     Graphics->DeviceContext->PSSetConstantBuffers(6, 1, &FogConstantBuffer);
     Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &ViewportConstantBuffer);
+    
     Graphics->DeviceContext->PSSetShaderResources(5, 1, &Graphics->SceneColorSRV);
     Graphics->DeviceContext->PSSetShaderResources(0, 1, &Graphics->DepthCopySRV);
 

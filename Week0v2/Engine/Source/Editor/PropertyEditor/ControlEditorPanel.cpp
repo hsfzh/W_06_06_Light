@@ -7,7 +7,7 @@
 #include "Components/SphereComp.h"
 #include "Components/UParticleSubUVComp.h"
 #include "Components/UText.h"
-#include "Components/HeightFogComponent.h"
+#include "Components/FogComponent.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/StaticMeshActor.h"
 #include "ImGUI/imgui_internal.h"
@@ -340,7 +340,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_Fog"));
-                    UHeightFogComponent* HeightFogComponent = SpawnedActor->AddComponent<UHeightFogComponent>(EComponentOrigin::Editor);
+                    UFogComponent* HeightFogComponent = SpawnedActor->AddComponent<UFogComponent>(EComponentOrigin::Editor);
                     break;
                 }
                 case OBJ_DIRECTIONAL_LIGHT:

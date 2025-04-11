@@ -25,6 +25,7 @@ struct FVertexSimple
     float x, y, z;    // Position
     float r, g, b, a; // Color
     float nx, ny, nz;
+    float Tnx, Tny, Tnz;
     float u=0, v=0;
     uint32 MaterialIndex;
 };
@@ -392,25 +393,18 @@ struct FDepthToWorldConstants
     float FogDensity;
 };
 
-struct alignas(16) FHeightFogConstants
+struct alignas(16) FFogConstants
 {
-    float FogDensity;       
-    float HeightFogStart;
-    float HeightFogEnd;
-    float MaxOpacity;       
-
-    float DistanceFogNear;
-    float DistanceFogFar;
-    float pad1, pad2;
-    
-    FLinearColor InscatteringColor;
-    FLinearColor DirectionalInscatteringColor;
-
-    FVector DirectionalLightDirection;
-    float DirectionalInscatteringExponent;
-
-    float DirectionalInscatteringStartDistance;
-    float pad3, pad4, pad5;
-
-    int IsExponential;
+    FLinearColor Color;
+    float Density;
+    float FogStart;
+    float FogEnd;
+    int bIsFogOn; //bool 뭔가 이상해서 int로
+    float FogZPosition;
+    float FogBaseHeight;
+    float HeightFallOff;
+    int bIsHeightFog;
+    float ScatteringIntensity;  // 추가: 빛 산란 강도 [4]
+    float LightShaftDensity;    // 추가: 광선 밀도 [4]
+    FVector Padding1;
 };

@@ -25,6 +25,7 @@ struct FVertexSimple
     float r, g, b, a; // Color
     float nx, ny, nz;
     float u=0, v=0;
+    // float t; 
     uint32 MaterialIndex;
 };
 
@@ -60,7 +61,7 @@ struct FObjInfo
     TArray<FVector> Vertices;
     TArray<FVector> Normals;
     TArray<FVector2D> UVs;
-    
+    // TArray<FVector> Tangents;
     // Faces
     TArray<int32> Faces;
 

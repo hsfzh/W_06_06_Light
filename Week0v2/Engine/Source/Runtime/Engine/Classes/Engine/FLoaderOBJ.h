@@ -174,21 +174,6 @@ struct FLoaderOBJ
                     OutObjInfo.NormalIndices.Add(faceNormalIndices[1]);
                     OutObjInfo.NormalIndices.Add(faceNormalIndices[2]);
                 }
-                // // 삼각형화 (삼각형 팬 방식)
-                // for (int j = 1; j + 1 < faceVertexIndices.Num(); j++)
-                // {
-                //     OutObjInfo.VertexIndices.Add(faceVertexIndices[0]);
-                //     OutObjInfo.VertexIndices.Add(faceVertexIndices[j]);
-                //     OutObjInfo.VertexIndices.Add(faceVertexIndices[j + 1]);
-                //
-                //     OutObjInfo.TextureIndices.Add(faceTextureIndices[0]);
-                //     OutObjInfo.TextureIndices.Add(faceTextureIndices[j]);
-                //     OutObjInfo.TextureIndices.Add(faceTextureIndices[j + 1]);
-                //
-                //     OutObjInfo.NormalIndices.Add(faceNormalIndices[0]);
-                //     OutObjInfo.NormalIndices.Add(faceNormalIndices[j]);
-                //     OutObjInfo.NormalIndices.Add(faceNormalIndices[j + 1]);
-                // }
             }
         }
 
@@ -197,7 +182,71 @@ struct FLoaderOBJ
             FMaterialSubset& LastSubset = OutObjInfo.MaterialSubsets[OutObjInfo.MaterialSubsets.Num() - 1];
             LastSubset.IndexCount = OutObjInfo.VertexIndices.Num() - LastSubset.IndexStart;
         }
-        
+
+#define region tangent
+        // OBJ 파싱 루프 종료 후, 모든 정점, 텍스처, 노멀, 인덱스 데이터가 OutObjInfo에 저장된 상태
+
+        // 1. 탄젠트를 누산할 배열을 초기화
+        // TArray<FVector> TangentAccum;
+        // TangentAccum.Reserve(OutObjInfo.Vertices.Num());
+        //
+        // // 2. 삼각형(face) 단위로 탄젠트 계산 (인덱스 배열은 삼각형별로 구성되었음)
+        // for (int32 i = 0; i < OutObjInfo.VertexIndices.Num(); i += 3)
+        // {
+        //     uint32 i0 = OutObjInfo.VertexIndices[i];
+        //     uint32 i1 = OutObjInfo.VertexIndices[i + 1];
+        //     uint32 i2 = OutObjInfo.VertexIndices[i + 2];
+        //     
+        //     // 정점 위치
+        //     const FVector& P0 = OutObjInfo.Vertices[i0];
+        //     const FVector& P1 = OutObjInfo.Vertices[i1];
+        //     const FVector& P2 = OutObjInfo.Vertices[i2];
+        //     
+        //     // 해당 삼각형의 UV 좌표
+        //     const FVector2D& UV0 = OutObjInfo.UVs[ OutObjInfo.TextureIndices[i] ];
+        //     const FVector2D& UV1 = OutObjInfo.UVs[ OutObjInfo.TextureIndices[i + 1] ];
+        //     const FVector2D& UV2 = OutObjInfo.UVs[ OutObjInfo.TextureIndices[i + 2] ];
+        //     
+        //     FVector Edge1 = P1 - P0;
+        //     FVector Edge2 = P2 - P0;
+        //     
+        //     FVector2D DeltaUV1 = UV1 - UV0;
+        //     FVector2D DeltaUV2 = UV2 - UV0;
+        //     
+        //     float Denom = (DeltaUV1.x * DeltaUV2.y - DeltaUV2.x * DeltaUV1.y);
+        //     float f = (FMath::IsNearlyZero(Denom)) ? 0.0f : 1.0f / Denom;
+        //     
+        //     FVector Tangent;
+        //     Tangent.x = f * (DeltaUV2.y * Edge1.x - DeltaUV1.y * Edge2.x);
+        //     Tangent.y = f * (DeltaUV2.y * Edge1.y - DeltaUV1.y * Edge2.y);
+        //     Tangent.z = f * (DeltaUV2.y * Edge1.z - DeltaUV1.y * Edge2.z);
+        //     
+        //     // 각 정점에 탄젠트를 누산
+        //     TangentAccum[i0] += Tangent;
+        //     TangentAccum[i1] += Tangent;
+        //     TangentAccum[i2] += Tangent;
+        // }
+
+        // 3. 정점별로 누산된 탄젠트를 보정하여 최종 탄젠트 계산
+        // TArray<FVector> FinalTangents;
+        // FinalTangents.SetNum(OutObjInfo.Vertices.Num());
+        //
+        // for (int32 i = 0; i < OutObjInfo.Vertices.Num(); i++)
+        // {
+        //     const FVector& AccumTangent = TangentAccum[i];
+        //     const FVector& Normal = OutObjInfo.Normals[i];
+        //     
+        //     // 그람-슈미트 정규직교화: 실제 노멀과 독립적인 탄젠트를 보정
+        //     FVector OrthoTangent = (AccumTangent - Normal * Normal.Dot(AccumTangent)).Normalize();
+        //     
+        //     FinalTangents[i] = OrthoTangent;
+        // }
+        //
+        // // 최종 탄젠트 배열을 OutObjInfo에 저장 (OutObjInfo.Tangents라고 가정)
+        // OutObjInfo.Tangents = FinalTangents;
+
+
+#define endregion 
         return true;
     }
     

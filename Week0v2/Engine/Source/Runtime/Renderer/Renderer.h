@@ -3,11 +3,14 @@
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d3dcompiler")
 
-#define _TCHAR_DEFINED
 #include "EngineBaseTypes.h"
 #include "Define.h"
-#include "RenderResourceManager.h"
+#include "Container/Map.h"
 
+class FRenderResourceManager;
+class FShaderProgram;
+class FVBIBTopologyMapping;
+class FGraphicsDevice;
 class FGizmoRenderPass;
 class FLineBatchRenderPass;
 class FStaticMeshRenderPass;
@@ -25,15 +28,15 @@ private:
 public:
     FGraphicsDevice* Graphics;
 public:
-    ID3D11SamplerState* GetSamplerState(const ESamplerType InType) const { return RenderResourceManager->GetSamplerState(InType); }
-    ID3D11RasterizerState* GetRasterizerState(const ERasterizerState InState) const { return RenderResourceManager->GetRasterizerState(InState); }
-    ID3D11BlendState* GetBlendState(const EBlendState InState) const { return RenderResourceManager->GetBlendState(InState); }
-    ID3D11DepthStencilState* GetDepthStencilState(const EDepthStencilState InState) const { return RenderResourceManager->GetDepthStencilState(InState); }
+    ID3D11SamplerState* GetSamplerState(const ESamplerType InType) const;
+    ID3D11RasterizerState* GetRasterizerState(const ERasterizerState InState) const;
+    ID3D11BlendState* GetBlendState(const EBlendState InState) const;
+    ID3D11DepthStencilState* GetDepthStencilState(const EDepthStencilState InState) const;
 
-    ID3D11RasterizerState* GetCurrentRasterizerState() const {  return RenderResourceManager->GetRasterizerState(CurrentRasterizerState); }
+    ID3D11RasterizerState* GetCurrentRasterizerState() const;
     void SetCurrentRasterizerState(const ERasterizerState InState) { CurrentRasterizerState = InState; }
 
-    std::shared_ptr<FVBIBTopologyMapping> GetVBIBTopologyMapping(const FName InName) {return VBIBTopologyMappings[InName];}
+    std::shared_ptr<FVBIBTopologyMapping> GetVBIBTopologyMapping(const FName InName) { return VBIBTopologyMappings[InName]; }
 
 public:
     void Initialize(FGraphicsDevice* graphics);

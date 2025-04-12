@@ -1,10 +1,7 @@
 #pragma once
 #include "Container/String.h"
-#include "Container/Array.h"
-#include "Math/Vector.h"
 #include "Serialization/Archive.h"
 #include "Components/ActorComponent.h"
-#include "Math/Quat.h"
 #include <functional>
 #include <memory>
 

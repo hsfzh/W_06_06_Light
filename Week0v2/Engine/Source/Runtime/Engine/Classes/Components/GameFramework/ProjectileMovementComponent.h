@@ -79,7 +79,7 @@ public:
     
 public:
     virtual std::shared_ptr<FActorComponentInfo> GetActorComponentInfo() override;
-    virtual void LoadAndConstruct(const FActorComponentInfo& Info);
+    void LoadAndConstruct(const FActorComponentInfo& Info) override;
 
 public:
     float InitialSpeed;

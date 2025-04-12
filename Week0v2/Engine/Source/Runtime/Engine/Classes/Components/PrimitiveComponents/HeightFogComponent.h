@@ -101,7 +101,7 @@ public:
     float DirectionalInscatteringStartDistance;
 
 public:
-    virtual void LoadAndConstruct(const FActorComponentInfo& Info);
+    void LoadAndConstruct(const FActorComponentInfo& Info) override;
     virtual std::shared_ptr<FActorComponentInfo> GetActorComponentInfo() override;
 };
 

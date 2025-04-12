@@ -6,10 +6,14 @@ struct FDirectionalLightComponentInfo : public FLightComponentInfo
     DECLARE_ACTORCOMPONENT_INFO(FDirectionalLightComponentInfo);
 
     FVector Direction;
+    float LigthSourceAngle;
+    float LigthSourceSoftAngle;
 
     FDirectionalLightComponentInfo()
         : FLightComponentInfo()
         , Direction(FVector(0.0f, 0.0f, -1.0f))
+        , LigthSourceAngle(0.5357f)
+        , LigthSourceSoftAngle(0.0f)
     {
         InfoType = TEXT("FDirectionalLightComponentInfo");
         ComponentType = TEXT("UDirectionalLightComponent");
@@ -32,19 +36,21 @@ struct FDirectionalLightComponentInfo : public FLightComponentInfo
         ar >> Direction;
     }
 };
-class UDirectionalLightComponent :
-    public ULightComponentBase
+
+class UDirectionalLightComponent : public ULightComponent
 {
-    DECLARE_CLASS(UDirectionalLightComponent, ULightComponentBase)
+    DECLARE_CLASS(UDirectionalLightComponent, ULightComponent)
 public:
     UDirectionalLightComponent();
     UDirectionalLightComponent(const UDirectionalLightComponent& Other);
     virtual ~UDirectionalLightComponent() override = default;
 private:
     FVector Direction = FVector(0.0f, 0.0f, -1.0f);
+    float LigthSourceAngle = 0.5357f;
+    float LigthSourceSoftAngle = 0.0f;
 public:
     FVector GetDirection() const { return Direction; }
-    void SetDirection(FVector _newDir) { Direction = _newDir; }
+    void SetDirection(const FVector InDirection) { Direction = InDirection; }
 
 public:
     virtual UObject* Duplicate() const override;

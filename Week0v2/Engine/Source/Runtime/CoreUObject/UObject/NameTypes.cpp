@@ -444,3 +444,19 @@ bool FName::operator==(const FName& Other) const
 {
 	return ComparisonIndex == Other.ComparisonIndex;
 }
+
+void FName::Serialize(FArchive& Ar) const
+{
+    FString NameStr = ToString();
+    Ar << NameStr;
+}
+
+void FName::Deserialize(FArchive& Ar)
+{
+    // 저장된 문자열을 읽어 FName을 재구성합니다.
+    FString NameStr;
+    Ar >> NameStr;
+    // 글로벌 이름 풀에 따라 새로운 FName을 생성합니다.
+    *this = FName(NameStr);
+}
+

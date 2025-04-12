@@ -1,5 +1,6 @@
 #pragma once
 #include "StaticMeshComponent.h"
+#include "UObject/ObjectMacros.h"
 
 class UCubeComp : public UStaticMeshComponent
 {

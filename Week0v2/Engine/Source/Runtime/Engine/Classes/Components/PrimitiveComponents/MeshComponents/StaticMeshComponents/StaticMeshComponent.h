@@ -1,6 +1,7 @@
 #pragma once
-#include "Components/MeshComponent.h"
-#include "Mesh/StaticMesh.h"
+#include "Components/Mesh/StaticMesh.h"
+#include "Components/PrimitiveComponents/PrimitiveComponent.h"
+#include "Components/PrimitiveComponents/MeshComponents/MeshComponent.h"
 
 struct FStaticMeshComponentInfo : public FPrimitiveComponentInfo
 {

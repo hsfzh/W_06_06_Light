@@ -15,7 +15,7 @@ struct FPointLightComponentInfo : public FLightComponentInfo
     {
         InfoType = TEXT("FPointLightComponentInfo");
         ComponentType = TEXT("UPointLightComponent");
-    }
+    } 
 
     virtual void Copy(FActorComponentInfo& Other) override
     {
@@ -38,9 +38,9 @@ struct FPointLightComponentInfo : public FLightComponentInfo
     }
 };
 
-class UPointLightComponent : public ULightComponentBase
+class UPointLightComponent : public ULightComponent
 {
-    DECLARE_CLASS(UPointLightComponent, ULightComponentBase)
+    DECLARE_CLASS(UPointLightComponent, ULightComponent)
 public:
     UPointLightComponent();
     UPointLightComponent(const UPointLightComponent& Other);
@@ -48,7 +48,8 @@ public:
 protected:
     float Radius = 1.0f;
     float AttenuationFalloff = 0.01f;
-
+    float SourceLength = 0.0f;
+    
 public:
     float GetRadius() const { return Radius; }
     void SetRadius(float _newRadius) { Radius = _newRadius; }

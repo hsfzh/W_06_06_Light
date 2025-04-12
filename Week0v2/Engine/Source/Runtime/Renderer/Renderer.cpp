@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include <d3dcompiler.h>
 
+#include "RenderResourceManager.h"
 #include "VBIBTopologyMapping.h"
 #include "Engine/World.h"
 #include "D3D11RHI/GraphicDevice.h"
@@ -445,6 +446,30 @@ void FRenderer::CreateDebugDepthShader()
     SAFE_RELEASE(PSBlob_StaticMesh) 
 }
 
+ID3D11SamplerState* FRenderer::GetSamplerState(const ESamplerType InType) const
+{
+    return RenderResourceManager->GetSamplerState(InType);
+}
+
+ID3D11RasterizerState* FRenderer::GetRasterizerState(const ERasterizerState InState) const
+{
+    return RenderResourceManager->GetRasterizerState(InState);
+}
+
+ID3D11BlendState* FRenderer::GetBlendState(const EBlendState InState) const
+{
+    return RenderResourceManager->GetBlendState(InState);
+}
+
+ID3D11DepthStencilState* FRenderer::GetDepthStencilState(const EDepthStencilState InState) const
+{
+    return RenderResourceManager->GetDepthStencilState(InState);
+}
+
+ID3D11RasterizerState* FRenderer::GetCurrentRasterizerState() const
+{
+    return RenderResourceManager->GetRasterizerState(CurrentRasterizerState);
+}
 void FRenderer::ReleaseShader()
 {
     // RenderResourceManager->ReleaseShader(InputLayout, VertexShader, PixelShader);

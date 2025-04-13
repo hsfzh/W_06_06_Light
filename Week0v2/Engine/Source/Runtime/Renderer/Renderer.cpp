@@ -72,27 +72,27 @@ void FRenderer::CreateStaticMeshShader()
     ID3D11PixelShader* PixelShader;
     ID3D11InputLayout* InputLayout;
     
-    VertexShader = RenderResourceManager->GetVertexShader(TEXT("StaticMeshVS"));
+    VertexShader = RenderResourceManager->GetVertexShader(TEXT("GouraudVS"));
     if (VertexShader == nullptr)
     {
-        Graphics->CreateVertexShader(TEXT("StaticMeshVertexShader.hlsl"), nullptr, &VSBlob_StaticMesh, &VertexShader);
+        Graphics->CreateVertexShader(TEXT("GouraudVertexShader.hlsl"), nullptr, &VSBlob_StaticMesh, &VertexShader);
     }
     else
     {
-        FGraphicsDevice::CompileVertexShader(TEXT("StaticMeshVertexShader.hlsl"), nullptr,  &VSBlob_StaticMesh);
+        FGraphicsDevice::CompileVertexShader(TEXT("GouraudVertexShader.hlsl"), nullptr,  &VSBlob_StaticMesh);
     }
-    RenderResourceManager->AddOrSetVertexShader(TEXT("StaticMeshVS"), VertexShader);
+    RenderResourceManager->AddOrSetVertexShader(TEXT("GouraudVS"), VertexShader);
     
-    PixelShader = RenderResourceManager->GetPixelShader(TEXT("StaticMeshPS"));
+    PixelShader = RenderResourceManager->GetPixelShader(TEXT("GouraudPS"));
     if (PixelShader == nullptr)
     {
-        Graphics->CreatePixelShader(TEXT("StaticMeshPixelShader.hlsl"), nullptr, &PSBlob_StaticMesh, &PixelShader);
+        Graphics->CreatePixelShader(TEXT("GouraudPixelShader.hlsl"), nullptr, &PSBlob_StaticMesh, &PixelShader);
     }
     else
     {
-        FGraphicsDevice::CompilePixelShader(TEXT("StaticMeshPixelShader.hlsl"), nullptr, &PSBlob_StaticMesh);
+        FGraphicsDevice::CompilePixelShader(TEXT("GouraudPixelShader.hlsl"), nullptr, &PSBlob_StaticMesh);
     }
-    RenderResourceManager->AddOrSetPixelShader(TEXT("StaticMeshPS"), PixelShader);
+    RenderResourceManager->AddOrSetPixelShader(TEXT("GouraudPS"), PixelShader);
 
     D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -131,12 +131,12 @@ void FRenderer::CreateStaticMeshShader()
         }
     }
 
-    MappingVSPSInputLayout(TEXT("StaticMesh"), TEXT("StaticMeshVS"), TEXT("StaticMeshPS"), InputLayout);
-    MappingVSPSCBSlot(TEXT("StaticMesh"), ShaderStageToCB);
+    MappingVSPSInputLayout(TEXT("Gouraud"), TEXT("GouraudVS"), TEXT("GouraudPS"), InputLayout);
+    MappingVSPSCBSlot(TEXT("Gouraud"), ShaderStageToCB);
 
 
-    StaticMeshRenderPass = std::make_shared<FStaticMeshRenderPass>(TEXT("StaticMesh"));
-    GizmoRenderPass = std::make_shared<FGizmoRenderPass>(TEXT("StaticMesh"));
+    StaticMeshRenderPass = std::make_shared<FStaticMeshRenderPass>(TEXT("Gouraud"));
+    GizmoRenderPass = std::make_shared<FGizmoRenderPass>(TEXT("Gouraud"));
     // TODO : Create RenderPass
 
 

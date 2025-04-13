@@ -100,7 +100,7 @@ void FStaticMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InVie
         
         UpdateMatrixConstants(staticMeshComp, View, Proj);
 
-        // UpdateSkySphereTextureConstants(Cast<USkySphereComponent>(staticMeshComp));
+        //UpdateSkySphereTextureConstants(Cast<USkySphereComponent>(staticMeshComp));
 
         UpdateLightConstants();
 
@@ -270,9 +270,6 @@ void FStaticMeshRenderPass::UpdateMaterialConstants(const FObjMaterialInfo& Mate
         {
             Graphics.DeviceContext->PSSetShaderResources(1, 1, &NormalTexture->TextureSRV);
         }
-        
-        ID3D11SamplerState* linearSampler = renderResourceManager->GetSamplerState(ESamplerType::Linear);
-        Graphics.DeviceContext->PSSetSamplers(static_cast<uint32>(ESamplerType::Linear), 1, &linearSampler);
     }
     else
     {

@@ -26,6 +26,49 @@ struct alignas(16) FViewportInfo
     FVector2D ViewportOffset; // offset: 8, size: 8
 };
 
+struct alignas(16) FMaterialConstants
+{
+    FVector DiffuseColor; // offset: 0, size: 12
+    float TransparencyScalar; // offset: 12, size: 4
+    FVector MatAmbientColor; // offset: 16, size: 12
+    float DensityScalar; // offset: 28, size: 4
+    FVector SpecularColor; // offset: 32, size: 12
+    float SpecularScalar; // offset: 44, size: 4
+    FVector EmissiveColor; // offset: 48, size: 12
+    float MaterialPad0; // offset: 60, size: 4
+};
+
+struct alignas(16) FSubUVConstant
+{
+    float indexU; // offset: 0, size: 4
+    float indexV; // offset: 4, size: 4
+    uint8 pad0[8]; // Padding to end of buffer
+};
+
+struct alignas(16) FMatrixConstants
+{
+    FMatrix Model; // offset: 0, size: 64
+    FMatrix ViewProj; // offset: 64, size: 64
+    FMatrix MInverseTranspose; // offset: 128, size: 64
+    bool isSelected; // offset: 192, size: 4
+    uint8 pad0[12]; // Padding to end of buffer
+};
+
+struct alignas(16) FLightingConstants
+{
+    uint32 NumDirectionalLights; // offset: 0, size: 4
+    uint32 NumPointLights; // offset: 4, size: 4
+    FVector2D pad; // offset: 8, size: 8
+    FDirectionalLight DirLights[4];
+    FPointLight PointLights[16];
+};
+
+struct alignas(16) FFlagConstants
+{
+    bool IsLit; // offset: 0, size: 4
+    FVector flagPad0; // offset: 4, size: 12
+};
+
 struct alignas(16) FFogParams
 {
     float FogDensity; // offset: 0, size: 4
@@ -69,49 +112,6 @@ struct alignas(16) FPrimitiveCounts
     int pad; // offset: 4, size: 4
     int ConeCount; // offset: 8, size: 4
     int pad1; // offset: 12, size: 4
-};
-
-struct alignas(16) FMaterialConstants
-{
-    FVector DiffuseColor; // offset: 0, size: 12
-    float TransparencyScalar; // offset: 12, size: 4
-    FVector MatAmbientColor; // offset: 16, size: 12
-    float DensityScalar; // offset: 28, size: 4
-    FVector SpecularColor; // offset: 32, size: 12
-    float SpecularScalar; // offset: 44, size: 4
-    FVector EmissiveColor; // offset: 48, size: 12
-    float MaterialPad0; // offset: 60, size: 4
-};
-
-struct alignas(16) FLightingConstants
-{
-    uint32 NumDirectionalLights; // offset: 0, size: 4
-    uint32 NumPointLights; // offset: 4, size: 4
-    FVector2D pad; // offset: 8, size: 8
-    FDirectionalLight DirLights[4];
-    FPointLight PointLights[16];
-};
-
-struct alignas(16) FFlagConstants
-{
-    bool IsLit; // offset: 0, size: 4
-    FVector flagPad0; // offset: 4, size: 12
-};
-
-struct alignas(16) FSubUVConstant
-{
-    float indexU; // offset: 0, size: 4
-    float indexV; // offset: 4, size: 4
-    uint8 pad0[8]; // Padding to end of buffer
-};
-
-struct alignas(16) FMatrixConstants
-{
-    FMatrix Model; // offset: 0, size: 64
-    FMatrix ViewProj; // offset: 64, size: 64
-    FMatrix MInverseTranspose; // offset: 128, size: 64
-    bool isSelected; // offset: 192, size: 4
-    uint8 pad0[12]; // Padding to end of buffer
 };
 
 struct alignas(16) FConstants

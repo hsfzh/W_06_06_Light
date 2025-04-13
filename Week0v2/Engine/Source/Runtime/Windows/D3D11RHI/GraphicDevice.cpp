@@ -579,8 +579,9 @@ bool FGraphicsDevice::CreateVertexShader(const FString& InFileName, const D3D_SH
     DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef  _DEBUG
     shaderFlags |= D3DCOMPILE_DEBUG;
-#endif
     shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
 
     ID3DBlob* errorBlob = nullptr;
 

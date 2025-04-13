@@ -52,7 +52,8 @@ cbuffer FFlagConstants : register(b2)
 cbuffer FSubUVConstant : register(b3)
 {
     float indexU;
-    float indexV;
+    float indexV; 
+    float2 padding;
 }
 
 cbuffer FCameraConstant : register(b4)

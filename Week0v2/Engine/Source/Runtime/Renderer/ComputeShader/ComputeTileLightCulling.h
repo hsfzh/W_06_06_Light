@@ -22,6 +22,8 @@ public:
 
     inline static int XTileCount = 16;
     inline static int YTileCount = 16;
+    inline static int MaxPointLightCount = 16;
+    inline static int MaxSpotLightCount = 8;
     
 private:
     void UpdateComputeConstants(const std::shared_ptr<FViewportClient> InViewportClient);

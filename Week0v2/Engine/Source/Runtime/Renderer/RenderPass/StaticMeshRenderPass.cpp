@@ -125,8 +125,6 @@ void FStaticMeshRenderPass:: Execute(const std::shared_ptr<FViewportClient> InVi
         UpdateLightConstants();
 
         UpdateFlagConstant();
-
-        
         
         UpdateComputeConstants(InViewportClient);
         

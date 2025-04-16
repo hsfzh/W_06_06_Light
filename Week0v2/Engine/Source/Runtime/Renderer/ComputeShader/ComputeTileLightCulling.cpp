@@ -5,6 +5,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/LightComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "D3D11RHI/CBStructDefine.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
@@ -45,8 +46,7 @@ void FComputeTileLightCulling::Dispatch(const std::shared_ptr<FViewportClient> I
         ID3D11ShaderResourceView* SBSRV = nullptr;
         ID3D11UnorderedAccessView* SBUAV = nullptr;
 
-        int MaxPointLightCount = 16;
-        int UAVElementCount = MaxPointLightCount * XTileCount * YTileCount;
+        int UAVElementCount = (MaxPointLightCount + MaxSpotLightCount) * XTileCount * YTileCount;
         
         SB = renderResourceManager->CreateUAVStructuredBuffer<UINT>(UAVElementCount);
         SBSRV = renderResourceManager->CreateBufferSRV(SB, UAVElementCount);
@@ -83,7 +83,8 @@ void FComputeTileLightCulling::UpdateLightConstants()
     FLightingConstants LightConstant;
     uint32 DirectionalLightCount = 0;
     uint32 PointLightCount = 0;
-
+    uint32 SpotLightCount = 0;
+    
     for (ULightComponentBase* Comp : LightComponents)
     {
         UPointLightComponent* PointLightComp = dynamic_cast<UPointLightComponent*>(Comp);
@@ -102,16 +103,32 @@ void FComputeTileLightCulling::UpdateLightConstants()
         UDirectionalLightComponent* DirectionalLightComp = dynamic_cast<UDirectionalLightComponent*>(Comp);
         if (DirectionalLightComp)
         {
+            USpotLightComponent* SpotLightComp = Cast<USpotLightComponent>(DirectionalLightComp);
+            if (SpotLightComp)
+            {
+                LightConstant.SpotLights[SpotLightCount].Position = SpotLightComp->GetComponentLocation();
+                LightConstant.SpotLights[SpotLightCount].Color = SpotLightComp->GetColor();
+                LightConstant.SpotLights[SpotLightCount].Intensity = SpotLightComp->GetIntensity();
+                LightConstant.SpotLights[SpotLightCount].Direction = SpotLightComp->GetOwner()->GetActorForwardVector();
+                LightConstant.SpotLights[SpotLightCount].InnerAngle = SpotLightComp->GetInnerConeAngle();
+                LightConstant.SpotLights[SpotLightCount].OuterAngle = SpotLightComp->GetOuterConeAngle();
+                SpotLightCount++;
+                continue;
+            }
+            
             LightConstant.DirLights[DirectionalLightCount].Color = DirectionalLightComp->GetColor();
             LightConstant.DirLights[DirectionalLightCount].Intensity = DirectionalLightComp->GetIntensity();
             LightConstant.DirLights[DirectionalLightCount].Direction = DirectionalLightComp->GetForwardVector();
             DirectionalLightCount++;
             continue;
         }
+
+        
     }
 
     LightConstant.NumPointLights = PointLightCount;
     LightConstant.NumDirectionalLights = DirectionalLightCount;
+    LightConstant.NumSpotLights = SpotLightCount;
 
     ID3D11Buffer* LightConstantBuffer = renderResourceManager->GetConstantBuffer(TEXT("FLightingConstants"));
     

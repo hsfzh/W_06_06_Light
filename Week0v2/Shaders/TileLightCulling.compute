@@ -1,5 +1,8 @@
 #pragma kernel TileCulling
 
+#define MAX_POINT_LIGHT_COUNT 16
+#define MAX_SPOT_LIGHT_COUNT 8
+
 struct FDirectionalLight
 {
     float3 Direction;
@@ -99,13 +102,10 @@ void mainCS (uint3 tid : SV_DispatchThreadID, uint3 gid : SV_GroupID) {
     float3 tileAABBMax = max(tileMinWorld, tileMaxWorld);
 
     // 광원 컬링
-    uint lightCount = 0;
-
-    int MAX_POINT_LIGHTS = 16;
+    uint pointLightCount = 0;
+    uint tileOffset = tileIndex * (MAX_POINT_LIGHT_COUNT + MAX_SPOT_LIGHT_COUNT);
     
-    uint totalLightCount = MAX_POINT_LIGHTS; //지금은 PointLight만 하는중
-    for (uint i = 0; i < MAX_POINT_LIGHTS; ++i) { //라이트 돌면서
-        uint tileOffset = tileIndex * totalLightCount;
+    for (uint i = 0; i < MAX_POINT_LIGHT_COUNT; ++i) { //라이트 돌면서
         TileLightIndices[tileOffset + i] = 0xFFFFFFFF; //사용하지 않으면 엄청 큰 수로 초기화.
         
         // 포인트 광원과 타일 AABB의 최소 거리 계산
@@ -113,7 +113,23 @@ void mainCS (uint3 tid : SV_DispatchThreadID, uint3 gid : SV_GroupID) {
         float dist = distance(closestPoint, PointLights[i].Position);
 
         if (dist <= PointLights[i].Radius) {
-            uint listIndex = tileOffset + lightCount++; //TileLightIndices가 공유자원이고 각자 타일별로 쓸 수 있는 구역을 정해둬서 동시 접근이 안이뤄지게 한듯
+            uint listIndex = tileOffset + pointLightCount++; //TileLightIndices가 공유자원이고 각자 타일별로 쓸 수 있는 구역을 정해둬서 동시 접근이 안이뤄지게 한듯
+            TileLightIndices[listIndex] = i;
+        }
+    }
+
+    uint spotLightCount = 0;
+    for (uint i = 0; i < MAX_SPOT_LIGHT_COUNT; ++i)
+    {
+        TileLightIndices[tileOffset + MAX_POINT_LIGHT_COUNT + i] = 0xFFFFFFFF; //사용하지 않으면 엄청 큰 수로 초기화.
+        
+        // 포인트 광원과 타일 AABB의 최소 거리 계산
+        float3 closestPoint = clamp(SpotLights[i].Position, tileAABBMin, tileAABBMax);
+        float dist = distance(closestPoint, SpotLights[i].Position);
+
+        // if (dist <= SpotLights[i].Radius) {
+        if (dist <= 15) { //지금 SpotLight 반지름이 15로 하드코딩 돼있어서 여기도 15로 측정
+            uint listIndex = tileOffset + MAX_POINT_LIGHT_COUNT + spotLightCount++; //TileLightIndices가 공유자원이고 각자 타일별로 쓸 수 있는 구역을 정해둬서 동시 접근이 안이뤄지게 한듯
             TileLightIndices[listIndex] = i;
         }
     }

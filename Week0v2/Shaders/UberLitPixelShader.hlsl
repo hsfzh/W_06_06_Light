@@ -1,7 +1,7 @@
 #include "ShaderHeaders/GSamplers.hlsli"
 
-#define NUM_POINT_LIGHT 4
-#define NUM_SPOT_LIGHT 4
+#define MAX_POINT_LIGHT_COUNT 16
+#define MAX_SPOT_LIGHT_COUNT 8
 
 Texture2D Texture : register(t0);
 Texture2D NormalTexture : register(t1);
@@ -239,7 +239,7 @@ PS_OUTPUT mainPS(PS_INPUT input)
     
     float2 uv = CalculateUVWithNDCPosition(input.position);
     uint2 uvToTile = clamp(uint2(uv.xy * tileSize), uint2(0,0), uint2(tileSize - 1));
-    int tileIndex = uvToTile.y * tileSizeX + uvToTile.x;
+    int tileIndex = uvToTile.y * tileCountX + uvToTile.x;
     
     if(!IsLit)
     {
@@ -271,9 +271,9 @@ PS_OUTPUT mainPS(PS_INPUT input)
         TotalLight += CalculateDirectionalLight(DirLights[i], Normal, ViewDir, baseColor.rgb);  
 
     // 점광 처리  
-    for(uint j=0; j<NumPointLights; ++j)
+    for(uint j=0; j<MAX_POINT_LIGHT_COUNT; ++j)
     {
-        uint listIndex = tileIndex * tileCountX + j; //여기 포문 들어가서 해야할듯
+        uint listIndex = tileIndex + j; //내 타일의 처음부터 읽기
         uint lightIndex = TileLightIndices[listIndex];
         if (lightIndex == 0xFFFFFFFF)
         {
@@ -281,12 +281,19 @@ PS_OUTPUT mainPS(PS_INPUT input)
         }
         
         TotalLight += CalculatePointLight(PointLights[lightIndex], input.worldPos, Normal, ViewDir, baseColor.rgb);
-        // output.color = float4(1,1,1,1);
-        // return output;
     }
     
-    for (uint k = 0; k < NumSpotLights; ++k)
-        TotalLight += CalculateSpotLight(SpotLights[k], input.worldPos, Normal, ViewDir, baseColor.rgb);
+    for (uint k = 0; k < MAX_SPOT_LIGHT_COUNT; ++k)
+    {
+        uint listIndex = tileIndex + MAX_POINT_LIGHT_COUNT + k; //내 타일의 포인트 다음부터 읽기 
+        uint lightIndex = TileLightIndices[listIndex];
+        if (lightIndex == 0xFFFFFFFF)
+        {
+            break;
+        }
+        
+        TotalLight += CalculateSpotLight(SpotLights[lightIndex], input.worldPos, Normal, ViewDir, baseColor.rgb);
+    }
     
     // 최종 색상 
     output.color = float4(TotalLight*baseColor.rgb, baseColor.a * TransparencyScalar);

@@ -1,14 +1,26 @@
 #pragma once
-#include "UBillboardComponent.h"
+#include "PrimitiveComponent.h"
 
-struct FTextComponentInfo : public FBillboardComponentInfo
+struct FTexture;
+
+struct FTextComponentInfo : public FPrimitiveComponentInfo
 {
     DECLARE_ACTORCOMPONENT_INFO(FTextComponentInfo);
 
+    bool bIsBillboard;
+    float finalIndexU;
+    float finalIndexV;
+    FWString TexturePath; 
     FWString Text;
+    TArray<FVector> Quad;
+    int RowCount;
+    int ColumnCount;
+    float QuadWidth;
+    float QuadHeight;
 
+    
     FTextComponentInfo()
-        : FBillboardComponentInfo()
+        : FPrimitiveComponentInfo()
         , Text(L"")
     {
         InfoType = TEXT("FTextComponentInfo");
@@ -16,65 +28,93 @@ struct FTextComponentInfo : public FBillboardComponentInfo
     }
     virtual void Copy(FActorComponentInfo& Other) override
     {
-        FBillboardComponentInfo::Copy(Other);
+        FPrimitiveComponentInfo::Copy(Other);
         FTextComponentInfo& TextInfo = static_cast<FTextComponentInfo&>(Other);
+        TextInfo.bIsBillboard = bIsBillboard;
+        TextInfo.finalIndexU = finalIndexU;
+        TextInfo.finalIndexV = finalIndexV;
+        TextInfo.TexturePath = TexturePath;
         TextInfo.Text = Text;
+        TextInfo.Quad = Quad;
+        TextInfo.RowCount = RowCount;
+        TextInfo.ColumnCount = ColumnCount;
+        TextInfo.Quad = Quad;
+        TextInfo.QuadWidth = QuadWidth;
+        TextInfo.QuadHeight = QuadHeight;
     }
 
     virtual void Serialize(FArchive& ar) const override
     {
-        FBillboardComponentInfo::Serialize(ar);
-        ar << Text;
+        FPrimitiveComponentInfo::Serialize(ar);
+        ar << bIsBillboard << finalIndexU << finalIndexV << TexturePath << Text << Quad << RowCount << ColumnCount << Quad << QuadWidth << QuadHeight;
     }
 
     virtual void Deserialize(FArchive& ar) override
     {
-        FBillboardComponentInfo::Deserialize(ar);
-        ar >> Text;
+        FPrimitiveComponentInfo::Deserialize(ar);
+        ar >> bIsBillboard >> finalIndexU >> finalIndexV >> TexturePath >> Text >> Quad >> RowCount >> ColumnCount >> Quad >> QuadWidth >> QuadHeight;
     }
 };
 
-class UTextComponent : public UBillboardComponent
+class UTextComponent : public UPrimitiveComponent
 {
-    DECLARE_CLASS(UTextComponent, UBillboardComponent)
+    DECLARE_CLASS(UTextComponent, UPrimitiveComponent)
 
 public:
     UTextComponent();
     virtual ~UTextComponent() override;
-    UTextComponent(const UTextComponent& other);
+    UTextComponent(const UTextComponent& Other);
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
     void ClearText();
-    void SetText(const FWString& _text);
-    FWString GetText() { return text; }
-    void SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn);
+    void SetText(const FWString& InText);
+    FWString GetText() { return Text; }
+    void SetRowColumnCount(int InCellsPerRow, int InCellsPerColumn);
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
     virtual UObject* Duplicate() const override;
     virtual void DuplicateSubObjects(const UObject* Source) override;
     virtual void PostDuplicate() override;
 
-    TArray<FVertexTexture> vertexTextureArr;
+    void SetTexture(const FWString& InFileName);
+    FMatrix CreateBillboardMatrix();
+    
+    TArray<FVertexTexture> VertexTextureArr;
 
 public:    
     virtual std::shared_ptr<FActorComponentInfo> GetActorComponentInfo() override;
-    virtual void LoadAndConstruct(const FActorComponentInfo& Info);
+    void LoadAndConstruct(const FActorComponentInfo& Info) override;
 
-protected:
+    bool CheckPickingOnNDC(const TArray<FVector>& InCheckQuad, float& InHitDistance);
+    
+    bool IsBillboard() const { return bIsBillboard; }
+    void SetIsBillboard(const bool InbIsBillboard) { bIsBillboard = InbIsBillboard; }
 
-    FWString text;
+    float GetFinalIndexU() const { return FinalIndexU; }
+    float GetFinalIndexV() const { return FinalIndexV; }
 
-    TArray<FVector> quad;
+    std::shared_ptr<FTexture> GetTexture() const { return Texture; }
+    
+private:
+    bool bIsBillboard = false;
+    
+    float FinalIndexU = 0.0f;
+    float FinalIndexV = 0.0f;
+    std::shared_ptr<FTexture> Texture;
+    
+    FWString Text;
 
-    const int quadSize = 2;
+    TArray<FVector> Quad;
+
+    const int QuadSize = 2;
 
     int RowCount;
     int ColumnCount;
 
-    float quadWidth = 2.0f;
-    float quadHeight = 2.0f;
+    float QuadWidth = 2.0f;
+    float QuadHeight = 2.0f;
 
-    void setStartUV(char alphabet, float& outStartU, float& outStartV) const;
-    void setStartUV(wchar_t hangul, float& outStartU, float& outStartV) const;
+    void SetEngStartUV(char alphabet, float& outStartU, float& outStartV) const;
+    void SetKorStartUV(wchar_t hangul, float& outStartU, float& outStartV) const;
 
     void TextMVPRendering();
 };

@@ -15,11 +15,19 @@ UTextComponent::~UTextComponent()
 
 }
 
-UTextComponent::UTextComponent(const UTextComponent& other)
-    : UBillboardComponent(other)
-    , vertexTextureArr(other.vertexTextureArr)
-    , text(other.text)
-    , quad(other.quad)
+UTextComponent::UTextComponent(const UTextComponent& Other)
+    : Super(Other)
+    , VertexTextureArr(Other.VertexTextureArr)
+    , bIsBillboard(Other.bIsBillboard)
+    , FinalIndexU(Other.FinalIndexU)
+    , FinalIndexV(Other.FinalIndexV)
+    , Texture(Other.Texture)
+    , Text(Other.Text)
+    , Quad(Other.Quad)
+    , RowCount(Other.RowCount)
+    , ColumnCount(Other.ColumnCount)
+    , QuadWidth(Other.QuadWidth)
+    , QuadHeight(Other.QuadHeight)
 {
 }
 
@@ -36,12 +44,13 @@ void UTextComponent::TickComponent(float DeltaTime)
 
 void UTextComponent::ClearText()
 {
-    vertexTextureArr.Empty();
+    VertexTextureArr.Empty();
 }
-void UTextComponent::SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn) 
+
+void UTextComponent::SetRowColumnCount(const int InCellsPerRow, const int InCellsPerColumn) 
 {
-    RowCount = _cellsPerRow;
-    ColumnCount = _cellsPerColumn;
+    RowCount = InCellsPerRow;
+    ColumnCount = InCellsPerColumn;
 }
 
 int UTextComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
@@ -49,13 +58,13 @@ int UTextComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirecti
 	if (!(ShowFlags::GetInstance().currentFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))) {
 		return 0;
 	}
-	for (int i = 0; i < vertexTextureArr.Num(); i++)
+	for (int i = 0; i < VertexTextureArr.Num(); i++)
 	{
-		quad.Add(FVector(vertexTextureArr[i].x,
-			vertexTextureArr[i].y, vertexTextureArr[i].z));
+		Quad.Add(FVector(VertexTextureArr[i].x,
+			VertexTextureArr[i].y, VertexTextureArr[i].z));
 	}
 
-	return CheckPickingOnNDC(quad,pfNearHitDistance);
+	return CheckPickingOnNDC(Quad, pfNearHitDistance);
 }
 
 UObject* UTextComponent::Duplicate() const
@@ -68,12 +77,47 @@ UObject* UTextComponent::Duplicate() const
 
 void UTextComponent::DuplicateSubObjects(const UObject* Source)
 {
-    UBillboardComponent::DuplicateSubObjects(Source);
+    Super::DuplicateSubObjects(Source);
 }
 
 void UTextComponent::PostDuplicate()
 {
-    UBillboardComponent::PostDuplicate();
+    Super::PostDuplicate();
+}
+
+void UTextComponent::SetTexture(const FWString& InFileName)
+{
+    Texture = UEditorEngine::resourceMgr.GetTexture(InFileName);
+}
+
+FMatrix UTextComponent::CreateBillboardMatrix()
+{
+    FMatrix CameraView = GetEngine()->GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
+
+    CameraView.M[0][3] = 0.0f;
+    CameraView.M[1][3] = 0.0f;
+    CameraView.M[2][3] = 0.0f;
+
+
+    CameraView.M[3][0] = 0.0f;
+    CameraView.M[3][1] = 0.0f;
+    CameraView.M[3][2] = 0.0f;
+    CameraView.M[3][3] = 1.0f;
+
+
+    CameraView.M[0][2] = -CameraView.M[0][2];
+    CameraView.M[1][2] = -CameraView.M[1][2];
+    CameraView.M[2][2] = -CameraView.M[2][2];
+    const FMatrix LookAtCamera = FMatrix::Transpose(CameraView);
+
+    const FVector worldLocation = GetComponentLocation();
+    const FVector worldScale = RelativeScale3D;
+    const FMatrix S = FMatrix::CreateScale(worldScale.x, worldScale.y, worldScale.z);
+    const FMatrix R = LookAtCamera;
+    const FMatrix T = FMatrix::CreateTranslationMatrix(worldLocation);
+    const FMatrix M = S * R * T;
+
+    return M;
 }
 
 std::shared_ptr<FActorComponentInfo> UTextComponent::GetActorComponentInfo()
@@ -81,7 +125,7 @@ std::shared_ptr<FActorComponentInfo> UTextComponent::GetActorComponentInfo()
     std::shared_ptr<FTextComponentInfo> Info = std::make_shared<FTextComponentInfo>();
     Super::GetActorComponentInfo()->Copy(*Info);
 
-    Info->Text = text;
+    Info->Text = Text;
 
     return Info;
 }
@@ -95,21 +139,19 @@ void UTextComponent::LoadAndConstruct(const FActorComponentInfo& Info)
     SetText(TextInfo.Text);
 }
 
-
-void UTextComponent::SetText(const FWString& _text)
+void UTextComponent::SetText(const FWString& InText)
 {
-	text = _text;
-	if (_text.empty())
+	Text = InText;
+	if (InText.empty())
 	{
 		Console::GetInstance().AddLog(LogLevel::Warning, "Text is empty");
 
-		vertexTextureArr.Empty();
-		quad.Empty();
+		VertexTextureArr.Empty();
+		Quad.Empty();
 	    
 		return;
 	}
-	int textSize = static_cast<int>(_text.size());
-
+	int textSize = static_cast<int>(InText.size());
 
 	const uint32 BitmapWidth = Texture->width;
 	const uint32 BitmapHeight = Texture->height;
@@ -120,7 +162,7 @@ void UTextComponent::SetText(const FWString& _text)
 	const float nTexelUOffset = CellWidth / BitmapWidth;
 	const float nTexelVOffset = CellHeight/ BitmapHeight;
 
-	for (int i = 0; i < _text.size(); i++)
+	for (int i = 0; i < InText.size(); i++)
 	{
 		FVertexTexture leftUP = { -1.0f,1.0f,0.0f,0.0f,0.0f };
 		FVertexTexture rightUP = { 1.0f,1.0f,0.0f,1.0f,0.0f };
@@ -131,15 +173,15 @@ void UTextComponent::SetText(const FWString& _text)
 		rightDown.u *= nTexelUOffset;
 		rightDown.v *= nTexelVOffset;
 
-		leftUP.x += quadWidth * i;
-		rightUP.x += quadWidth * i;
-		leftDown.x += quadWidth * i;
-		rightDown.x += quadWidth * i;
+		leftUP.x += QuadWidth * i;
+		rightUP.x += QuadWidth * i;
+		leftDown.x += QuadWidth * i;
+		rightDown.x += QuadWidth * i;
 
 		float startU = 0.0f;
 		float startV = 0.0f;
 
-		setStartUV(_text[i], startU, startV);
+		SetKorStartUV(InText[i], startU, startV);
 		leftUP.u += (nTexelUOffset * startU);
 		leftUP.v += (nTexelVOffset * startV);
 		rightUP.u += (nTexelUOffset * startU);
@@ -149,43 +191,43 @@ void UTextComponent::SetText(const FWString& _text)
 		rightDown.u += (nTexelUOffset * startU);
 		rightDown.v += (nTexelVOffset * startV);
 
-		vertexTextureArr.Add(leftUP);
-		vertexTextureArr.Add(rightUP);
-		vertexTextureArr.Add(leftDown);
-		vertexTextureArr.Add(rightUP);
-		vertexTextureArr.Add(rightDown);
-		vertexTextureArr.Add(leftDown);
+		VertexTextureArr.Add(leftUP);
+		VertexTextureArr.Add(rightUP);
+		VertexTextureArr.Add(leftDown);
+		VertexTextureArr.Add(rightUP);
+		VertexTextureArr.Add(rightDown);
+		VertexTextureArr.Add(leftDown);
 	}
 
-	const float lastX = -1.0f + quadSize * _text.size();
-	quad.Add(FVector(-1.0f,1.0f,0.0f));
-	quad.Add(FVector(-1.0f,-1.0f,0.0f));
-	quad.Add(FVector(lastX,1.0f,0.0f));
-	quad.Add(FVector(lastX,-1.0f,0.0f));
-
-	//CreateTextTextureVertexBuffer(vertexTextureArr,byteWidth);
+	const float lastX = -1.0f + QuadSize * InText.size();
+	Quad.Add(FVector(-1.0f,1.0f,0.0f));
+	Quad.Add(FVector(-1.0f,-1.0f,0.0f));
+	Quad.Add(FVector(lastX,1.0f,0.0f));
+	Quad.Add(FVector(lastX,-1.0f,0.0f));
+    
     ID3D11Buffer* VB = nullptr;
     
-    VB = GetEngine()->renderer.GetResourceManager()->CreateImmutableVertexBuffer<FVertexTexture>(vertexTextureArr);
+    VB = GetEngine()->renderer.GetResourceManager()->CreateImmutableVertexBuffer<FVertexTexture>(VertexTextureArr);
 
     int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, 
-                                     text.c_str(), -1, 
+                                     Text.c_str(), -1, 
                                      nullptr, 0, 
                                      nullptr, nullptr);
     std::string result(sizeNeeded, 0);
     WideCharToMultiByte(CP_UTF8, 0, 
-                        text.c_str(), -1, 
+                        Text.c_str(), -1, 
                         &result[0], sizeNeeded, 
                         nullptr, nullptr);
 
-    FString textName = result;
+    const FString textName = result;
 
     result.pop_back(); // 널 문자 제거
     GetEngine()->renderer.GetResourceManager()->AddOrSetVertexBuffer(textName, VB);
-    GetEngine()->renderer.MappingVBTopology(textName, textName, sizeof(FVertexSimple), vertexTextureArr.Num());
+    GetEngine()->renderer.MappingVBTopology(textName, textName, sizeof(FVertexSimple), VertexTextureArr.Num());
+    VBIBTopologyMappingName = textName;
 }
 
-void UTextComponent::setStartUV(const wchar_t hangul, float& outStartU, float& outStartV) const
+void UTextComponent::SetKorStartUV(const wchar_t hangul, float& outStartU, float& outStartV) const
 {
     //대문자만 받는중
     int StartU = 0;
@@ -233,7 +275,7 @@ void UTextComponent::setStartUV(const wchar_t hangul, float& outStartU, float& o
     outStartV = static_cast<float>(StartV + offsetV);
 }
 
-void UTextComponent::setStartUV(const char alphabet, float& outStartU, float& outStartV) const
+void UTextComponent::SetEngStartUV(const char alphabet, float& outStartU, float& outStartV) const
 {
     //대문자만 받는중
     int StartU=0;
@@ -277,6 +319,68 @@ void UTextComponent::setStartUV(const char alphabet, float& outStartU, float& ou
 
 }
 
+bool UTextComponent::CheckPickingOnNDC(const TArray<FVector>& InCheckQuad, float& InHitDistance)
+{
+    bool result = false;
+    POINT mousePos;
+    GetCursorPos(&mousePos);
+    ScreenToClient(GEngine->hWnd, &mousePos);
+
+    D3D11_VIEWPORT viewport;
+    UINT numViewports = 1;
+    UEditorEngine::graphicDevice.DeviceContext->RSGetViewports(&numViewports, &viewport);
+    float screenWidth = viewport.Width;
+    float screenHeight = viewport.Height;
+
+    FVector pickPosition;
+    const int screenX = mousePos.x;
+    const int screenY = mousePos.y;
+    const FMatrix projectionMatrix = GetEngine()->GetLevelEditor()->GetActiveViewportClient()->GetProjectionMatrix();
+    pickPosition.x = ((2.0f * screenX / viewport.Width) - 1);
+    pickPosition.y = -((2.0f * screenY / viewport.Height) - 1);
+    pickPosition.z = 1.0f; // Near Plane
+
+    const FMatrix M = CreateBillboardMatrix();
+    const FMatrix V = GEngine->GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();;
+    const FMatrix P = projectionMatrix;
+    const FMatrix MVP = M * V * P;
+
+    float minX = FLT_MAX;
+    float maxX = FLT_MIN;
+    float minY = FLT_MAX;
+    float maxY = FLT_MIN;
+    float avgZ = 0.0f;
+    for (int i = 0; i < InCheckQuad.Num(); i++)
+    {
+        FVector4 v = FVector4(InCheckQuad[i].x, InCheckQuad[i].y, InCheckQuad[i].z, 1.0f);
+        FVector4 clipPos = FMatrix::TransformVector(v, MVP);
+		
+        if (clipPos.w != 0)	clipPos = clipPos/clipPos.w;
+
+        minX = FMath::Min(minX, clipPos.x);
+        maxX = FMath::Max(maxX, clipPos.x);
+        minY = FMath::Min(minY, clipPos.y);
+        maxY = FMath::Max(maxY, clipPos.y);
+        avgZ += clipPos.z;
+    }
+
+    avgZ /= InCheckQuad.Num();
+
+    if (pickPosition.x >= minX && pickPosition.x <= maxX &&
+        pickPosition.y >= minY && pickPosition.y <= maxY)
+    {
+        float A = P.M[2][2];  // Projection Matrix의 A값 (Z 변환 계수)
+        float B = P.M[3][2];  // Projection Matrix의 B값 (Z 변환 계수)
+
+        float z_view_pick = (pickPosition.z - B) / A; // 마우스 클릭 View 공간 Z
+        float z_view_billboard = (avgZ - B) / A; // Billboard View 공간 Z
+
+        InHitDistance = 1000.0f;
+        result = true;
+    }
+
+    return result;    
+}
 
 void UTextComponent::TextMVPRendering()
 {

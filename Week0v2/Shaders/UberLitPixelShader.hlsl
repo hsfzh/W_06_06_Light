@@ -81,7 +81,8 @@ cbuffer FSubUVConstant : register(b4)
 {
     float indexU;
     float indexV;
-    float2 subUVpadding;
+    float ScaleU;
+    float ScaleV;
 }
 
 cbuffer FCameraConstant : register(b5)

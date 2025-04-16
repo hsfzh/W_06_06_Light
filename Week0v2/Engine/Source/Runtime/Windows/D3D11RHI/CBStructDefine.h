@@ -140,7 +140,8 @@ struct alignas(16) FSubUVConstant
 {
     float indexU; // offset: 0, size: 4
     float indexV; // offset: 4, size: 4
-    uint8 pad0[8]; // Padding to end of buffer
+    float ScaleU;
+    float ScaleV;
 };
 
 struct alignas(16) FMatrixConstants

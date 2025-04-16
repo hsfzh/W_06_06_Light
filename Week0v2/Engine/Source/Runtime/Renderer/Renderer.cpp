@@ -14,6 +14,8 @@
 #include "RenderPass/GizmoRenderPass.h"
 #include "RenderPass/LineBatchRenderPass.h"
 #include "RenderPass/StaticMeshRenderPass.h"
+#include "RenderPass/TextRenderPass.h"
+#include "RenderPass/TextureRenderPass.h"
 
 D3D_SHADER_MACRO FRenderer::GouradDefines[] =
 {
@@ -59,6 +61,11 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateVertexPixelShader(TEXT("UberLit"), nullptr);
     FString PhongShaderName = TEXT("UberLit");
     PhongRenderPass = std::make_shared<FStaticMeshRenderPass>(PhongShaderName);
+
+    CreateVertexPixelShader(TEXT("Texture"), nullptr);
+    FString TextureShaderName = TEXT("Texture");
+    TextureRenderPass = std::make_shared<FTextureRenderPass>(TextureShaderName);
+    TextRenderPass = std::make_shared<FTextRenderPass>(TextureShaderName);
     
     CreateVertexPixelShader(TEXT("Line"), nullptr);
     LineBatchRenderPass = std::make_shared<FLineBatchRenderPass>(TEXT("Line"));
@@ -668,6 +675,12 @@ void FRenderer::Render(UWorld* World, const std::shared_ptr<FEditorViewportClien
         }
     }
 
+    TextureRenderPass->Prepare(ActiveViewport);
+    TextureRenderPass->Execute(ActiveViewport);
+
+    TextRenderPass->Prepare(ActiveViewport);
+    TextRenderPass->Execute(ActiveViewport);
+
     LineBatchRenderPass->Prepare(ActiveViewport);
     LineBatchRenderPass->Execute(ActiveViewport);
 
@@ -685,26 +698,6 @@ void FRenderer::Render(UWorld* World, const std::shared_ptr<FEditorViewportClien
         GizmoRenderPass->Prepare(ActiveViewport);
         GizmoRenderPass->Execute(ActiveViewport);
     }
-
-    
-    //Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
-    //ChangeViewMode(ActiveViewport->GetViewMode());
-
-    //RenderPostProcess(World, ActiveViewport);
-
-    // 2. 스태틱 메시 렌더
-
-    //if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))
-        //RenderStaticMeshes(World, ActiveViewport);
-
-    // 3. 빌보드 렌더(빌보드, 텍스트)
-    //if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
-        //RenderBillboards(World, ActiveViewport);
-    
-    // 6. 포스트 프로세스
-    //RenderPostProcess(World, ActiveViewport, ActiveViewport);
-
-    //ClearRenderArr();
 }
 
 void FRenderer::ClearRenderObjects() const
@@ -712,6 +705,8 @@ void FRenderer::ClearRenderObjects() const
     GoroudRenderPass->ClearRenderObjects();
     LambertRenderPass->ClearRenderObjects();
     PhongRenderPass->ClearRenderObjects();
+    TextRenderPass->ClearRenderObjects();
+    TextureRenderPass->ClearRenderObjects();
     LineBatchRenderPass->ClearRenderObjects();
     GizmoRenderPass->ClearRenderObjects();
     DebugDepthRenderPass->ClearRenderObjects();
@@ -921,6 +916,9 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* InWorld) const
     {
         PhongRenderPass->AddRenderObjectsToRenderPass(InWorld);
     }
+
+    TextRenderPass->AddRenderObjectsToRenderPass(InWorld);
+    TextureRenderPass->AddRenderObjectsToRenderPass(InWorld);
     
     GizmoRenderPass->AddRenderObjectsToRenderPass(InWorld);
     EditorIconRenderPass->AddRenderObjectsToRenderPass(InWorld);

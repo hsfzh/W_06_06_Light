@@ -1,11 +1,12 @@
 #include "ShaderHeaders/GSamplers.hlsli"
 Texture2D gTexture : register(t0);
 
-cbuffer FSubUVConstant : register(b1)
+cbuffer FSubUVConstant : register(b0)
 {
     float indexU;
     float indexV;
-    float2 Pad;
+    float ScaleU;
+    float ScaleV;
 }
 
 struct PS_Input 
@@ -23,7 +24,7 @@ float4 mainPS(PS_Input input) : SV_TARGET
 {
     PSOutput output;
     
-    float2 uv = input.texCoord + float2(indexU, indexV);
+    float2 uv = input.texCoord + float2(indexU, indexV) + float2(ScaleU, ScaleV);
     float4 col = gTexture.Sample(linearSampler, uv);
     float threshold = 0.05; // 필요한 경우 임계값을 조정
     if (col.r < threshold && col.g < threshold && col.b < threshold)

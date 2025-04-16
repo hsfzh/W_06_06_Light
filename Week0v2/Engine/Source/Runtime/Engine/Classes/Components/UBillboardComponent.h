@@ -53,7 +53,7 @@ public:
         FVector& rayDirection, float& pfNearHitDistance
     ) override;
 
-    void SetTexture(FWString _fileName);
+    void SetTexture(const FWString& InFileName);
     //void SetUUIDParent(USceneComponent* _parent);
     FMatrix CreateBillboardMatrix();
     virtual UObject* Duplicate() const override;

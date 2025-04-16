@@ -1,13 +1,12 @@
-#include "Engine/Source/Editor/PropertyEditor/ShowFlags.h"
 #include "UParticleSubUVComp.h"
 
 #include "EditorEngine.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "Engine/World.h"
-#include "LevelEditor/SLevelEditor.h"
-
 
 UParticleSubUVComp::UParticleSubUVComp()
+    : CellsPerRow(0)
+    , CellsPerColumn(0)
 {
     bIsLoop = true;
 }
@@ -17,16 +16,18 @@ UParticleSubUVComp::UParticleSubUVComp(const UParticleSubUVComp& other)
     , bIsLoop(other.bIsLoop)
     , indexU(other.indexU)
     , indexV(other.indexV)
-    , second(other.second)
+    , ScaleU(other.ScaleU)
+    , ScaleV(other.ScaleV)
+    , Second(other.Second)
+    , ElapsedTime(other.ElapsedTime)
+    , FrameDuration(other.FrameDuration)
     , CellsPerColumn(other.CellsPerColumn)
     , CellsPerRow(other.CellsPerRow)
 {
 }
 
 UParticleSubUVComp::~UParticleSubUVComp()
-{
-
-}
+= default;
 
 void UParticleSubUVComp::InitializeComponent()
 {
@@ -35,47 +36,49 @@ void UParticleSubUVComp::InitializeComponent()
 	// UEditorEngine::renderer.PrepareSubUVConstant();
 }
 
-void UParticleSubUVComp::TickComponent(float DeltaTime)
+void UParticleSubUVComp::TickComponent(const float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
-    if (!IsActive()) return;
+    if (!IsActive() || !Texture)
+        return;
 
-	uint32 CellWidth = Texture->width / CellsPerColumn;
-	uint32 CellHeight = Texture->height / CellsPerColumn;
+    // 텍스처 크기를 기반으로 셀 크기 계산 (행, 열)
+    uint32 CellWidth = Texture->width / CellsPerColumn;
+    uint32 CellHeight = Texture->height / CellsPerRow;
 
+    float UVSaleX = 1.0f / static_cast<float>(CellsPerColumn);
+    float UVSaleY = 1.0f / static_cast<float>(CellsPerRow);
 
-	second += DeltaTime;
-	if (second >= 75)
-	{
-		indexU++;
-		second = 0;
-	}
-	if (indexU >= CellsPerColumn)
-	{
-		indexU = 0;
-		indexV++;
-	}
-	if (indexV >= CellsPerRow)
-	{
-		indexU = 0;
-		indexV = 0;
-
-	    // TODO: 파티클 제거는 따로 안하고, Actor에 LifeTime을 설정하든가, 파티클의 Activate 설정을 추가하던가 하기로
-	    if (!bIsLoop)
-	    {
+    // 시간 누적 후 프레임 전환
+    ElapsedTime += (DeltaTime * 1000);
+    if (ElapsedTime >= FrameDuration)
+    {
+        indexU++;
+        ElapsedTime = 0.0f;
+    }
+    if (indexU >= CellsPerColumn)
+    {
+        indexU = 0;
+        indexV++;
+    }
+    if (indexV >= CellsPerRow)
+    {
+        indexU = 0;
+        indexV = 0;
+        if (!bIsLoop)
+        {
             Deactivate();
-	    }
-	    // DestroyComponent();
-		// GetWorld()->ThrowAwayObj(this);
-		// GetWorld()->SetPickingObj(nullptr);
-	}
+        }
+    }
 
+    float UVOffsetX = static_cast<float>(indexU) * UVSaleX;
+    float UVOffsetY = static_cast<float>(indexV) * UVSaleY;
 
-	float normalWidthOffset = float(CellWidth) / float(Texture->width);
-	float normalHeightOffset = float(CellHeight) / float(Texture->height);
+    ScaleU = UVSaleX;
+    ScaleV = UVSaleY;
 
-	finalIndexU = float(indexU) * normalWidthOffset;
-	finalIndexV = float(indexV) * normalHeightOffset;
+    indexU = UVOffsetX;
+    indexV = UVOffsetY;
 }
 
 UObject* UParticleSubUVComp::Duplicate() const
@@ -124,7 +127,6 @@ void UParticleSubUVComp::UpdateVertexBuffer(const TArray<FVertexTexture>& vertic
 
 void UParticleSubUVComp::CreateSubUVVertexBuffer()
 {
-
 	uint32 CellWidth = Texture->width/CellsPerColumn;
 	uint32 CellHeight = Texture->height/ CellsPerColumn;
 	float normalWidthOffset = float(CellWidth) / float(Texture->width);

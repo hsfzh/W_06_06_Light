@@ -53,9 +53,9 @@ int UBillboardComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDi
 }
 
 
-void UBillboardComponent::SetTexture(FWString _fileName)
+void UBillboardComponent::SetTexture(const FWString& InFileName)
 {
-	Texture = UEditorEngine::resourceMgr.GetTexture(_fileName);
+	Texture = UEditorEngine::resourceMgr.GetTexture(InFileName);
 }
 
 // void UBillboardComponent::SetUUIDParent(USceneComponent* _parent)
@@ -66,32 +66,32 @@ void UBillboardComponent::SetTexture(FWString _fileName)
 
 FMatrix UBillboardComponent::CreateBillboardMatrix()
 {
-	FMatrix CameraView = GetEngine()->GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
+    FMatrix CameraView = GetEngine()->GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix();
 
-	CameraView.M[0][3] = 0.0f;
-	CameraView.M[1][3] = 0.0f;
-	CameraView.M[2][3] = 0.0f;
-
-
-	CameraView.M[3][0] = 0.0f;
-	CameraView.M[3][1] = 0.0f;
-	CameraView.M[3][2] = 0.0f;
-	CameraView.M[3][3] = 1.0f;
+    CameraView.M[0][3] = 0.0f;
+    CameraView.M[1][3] = 0.0f;
+    CameraView.M[2][3] = 0.0f;
 
 
-	CameraView.M[0][2] = -CameraView.M[0][2];
-	CameraView.M[1][2] = -CameraView.M[1][2];
-	CameraView.M[2][2] = -CameraView.M[2][2];
-	FMatrix LookAtCamera = FMatrix::Transpose(CameraView);
-	
-	FVector worldLocation = GetComponentLocation();
-	FVector worldScale = RelativeScale3D;
-	FMatrix S = FMatrix::CreateScale(worldScale.x, worldScale.y, worldScale.z);
-	FMatrix R = LookAtCamera;
-	FMatrix T = FMatrix::CreateTranslationMatrix(worldLocation);
-	FMatrix M = S * R * T;
+    CameraView.M[3][0] = 0.0f;
+    CameraView.M[3][1] = 0.0f;
+    CameraView.M[3][2] = 0.0f;
+    CameraView.M[3][3] = 1.0f;
 
-	return M;
+
+    CameraView.M[0][2] = -CameraView.M[0][2];
+    CameraView.M[1][2] = -CameraView.M[1][2];
+    CameraView.M[2][2] = -CameraView.M[2][2];
+    const FMatrix LookAtCamera = FMatrix::Transpose(CameraView);
+
+    const FVector worldLocation = GetComponentLocation();
+    const FVector worldScale = RelativeScale3D;
+    const FMatrix S = FMatrix::CreateScale(worldScale.x, worldScale.y, worldScale.z);
+    const FMatrix R = LookAtCamera;
+    const FMatrix T = FMatrix::CreateTranslationMatrix(worldLocation);
+    const FMatrix M = S * R * T;
+
+    return M;
 }
 
 UObject* UBillboardComponent::Duplicate() const

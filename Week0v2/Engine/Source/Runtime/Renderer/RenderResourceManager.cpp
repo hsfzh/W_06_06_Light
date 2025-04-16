@@ -272,6 +272,10 @@ void FRenderResourceManager::CreateVertexShader(const FString& InShaderName, con
     {
         GraphicDevice->CreateVertexShader(fullpath, pDefines, &VSBlob, &VertexShader);
     }
+    else
+    {
+        GraphicDevice->CompileVertexShader(fullpath, pDefines, &VSBlob);
+    }
     
     std::filesystem::file_time_type CurrentVSWriteTime = std::filesystem::last_write_time(fullpath);
 #if USE_WIDECHAR
@@ -310,6 +314,10 @@ void FRenderResourceManager::CreatePixelShader(const FString& InShaderName, cons
     if (PixelShader == nullptr)
     {
         GraphicDevice->CreatePixelShader(fullpath, pDefines, &PSBlob, &PixelShader);
+    }
+    else
+    {
+        GraphicDevice->CompilePixelShader(fullpath, pDefines, &PSBlob);
     }
 
     std::filesystem::file_time_type CurrentPSWriteTime = std::filesystem::last_write_time(fullpath);

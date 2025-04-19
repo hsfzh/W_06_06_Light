@@ -3,7 +3,7 @@
 #include "Components/PrimitiveComponents/PrimitiveComponent.h"
 #include "UObject/Casts.h"
 #include "UObject/ObjectFactory.h"
-#include "Math/JungleMath.h"
+
 URotatingMovementComponent::URotatingMovementComponent()
 {
 }
@@ -16,11 +16,11 @@ URotatingMovementComponent::URotatingMovementComponent(const URotatingMovementCo
 
 void URotatingMovementComponent::TickComponent(float DeltaTime)
 {
-    const FQuat OldRotation = UpdatedComponent->GetComponentQuat();
-    const FQuat DeltaRotation = JungleMath::EulerToQuaternion(RotationRate * DeltaTime);
-    const FQuat NewRotation = OldRotation * DeltaRotation;
+    const FRotator OldRotation = UpdatedComponent->GetComponentRotation();
+    const FRotator DeltaRotation = (RotationRate * DeltaTime / 1000.0f);
+    FRotator NewRotation = OldRotation.Add(DeltaRotation.Pitch, DeltaRotation.Yaw, DeltaRotation.Roll);
 
-    UpdatedComponent->SetRelativeQuat(NewRotation);
+    UpdatedComponent->SetRelativeRotation(NewRotation);
 }
 
 UObject* URotatingMovementComponent::Duplicate() const

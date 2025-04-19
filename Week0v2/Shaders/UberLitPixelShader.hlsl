@@ -1,7 +1,10 @@
 #include "ShaderHeaders/GSamplers.hlsli"
 
+
 Texture2D Texture : register(t0);
 Texture2D NormalTexture : register(t1);
+Texture2D SpotLightShadowMap[8] : register(t3);
+
 StructuredBuffer<uint> TileLightIndices : register(t2);
 
 #define MAX_POINTLIGHT_COUNT 16
@@ -56,6 +59,9 @@ struct FSpotLight
     
     float OuterAngle;
     float3 pad;
+    
+    row_major float4x4 View;
+    row_major float4x4 Proj;
 };
 
 cbuffer FLightingConstants : register(b2)
@@ -226,6 +232,13 @@ float3 CalculateSpotLight(
 static const uint TILE_SIZE_X = 16;
 static const uint TILE_SIZE_Y = 16;
 
+float4 WorldToLight(float3 WorldPos, row_major float4x4 View, row_major float4x4 Proj)
+{
+    float4 ViewPos = mul(float4(WorldPos, 1.0), View);
+    float4 LightViewPos = mul(ViewPos, Proj);
+    return LightViewPos;
+}
+
 PS_OUTPUT mainPS(PS_INPUT input)
 {
     PS_OUTPUT output;
@@ -256,12 +269,6 @@ PS_OUTPUT mainPS(PS_INPUT input)
     uint2 tileCoord = pixelCoord / tileSize; // 각 성분별 나눔
     uint tileIndex = tileCoord.x + tileCoord.y * numTilesX;
     
-    if(!IsLit)
-    {
-        output.color = float4(baseColor.rgb, 1.0);
-        return output;
-    }
-    
     float3 Normal = input.normal;
     
     if (bHasNormalTexture)
@@ -290,7 +297,7 @@ PS_OUTPUT mainPS(PS_INPUT input)
     if (IsSelectedActor == 1)
          TotalLight = TotalLight * 10.0f;
     TotalLight += EmissiveColor; // 자체 발광  
-
+    
     // 방향광 처리  s
     for(uint i=0; i<NumDirectionalLights; ++i)  
         TotalLight += CalculateDirectionalLight(DirLights[i], Normal, ViewDir, baseColor.rgb);  
@@ -309,9 +316,47 @@ PS_OUTPUT mainPS(PS_INPUT input)
     }
     
     for (uint k = 0; k < NumSpotLights; ++k)
-        TotalLight += CalculateSpotLight(SpotLights[k], input.worldPos, input.normal, ViewDir, baseColor.rgb);
+    {
+        bool bIsShadow = false;
+        float shadow = 0;
+        float3 LightColor = CalculateSpotLight(SpotLights[k], input.worldPos, input.normal, ViewDir, baseColor.rgb);
+        TotalLight += LightColor;
+        if (length(LightColor) > 0.0)
+        {
+            float4 LightViewPos = WorldToLight(input.worldPos, SpotLights[k].View, SpotLights[k].Proj);
+            
+            float2 shadowUV = LightViewPos.xy / LightViewPos.w * 0.5 + 0.5;
+            shadowUV.y = 1.0 - shadowUV.y;
+            float worldDepth = LightViewPos.z / LightViewPos.w;
+
+            if(shadowUV.x >= 0 && shadowUV.x <= 1 &&
+                shadowUV.y >= 0 && shadowUV.y <= 1 && 
+                worldDepth >= 0 && worldDepth <= 1)
+            {
+                float bias = max(0.01 * (1.0 - dot(Normal, -SpotLights[k].Direction)), 0.001);
+                for (int x = -1; x <= 1; ++x)
+                {
+                    for (int y = -1; y <= 1; ++y)
+                    {
+                        uint textureWidth, textureHeight;
+                        SpotLightShadowMap[k].GetDimensions(textureWidth, textureHeight);
+                        float2 texelSize = 1.0 / float2(textureWidth, textureHeight);
+                        float2 offset = float2(x, y) * texelSize;
+                        float sample = SpotLightShadowMap[k].Sample(pointSampler, shadowUV + offset).r;
+                        shadow += (worldDepth >= sample + bias) ? 1.0 : 0.0;
+                    }
+                }
+                shadow = shadow / 9.0;
+                bIsShadow = true;
+            }
+        }
+        float shadowFactor = bIsShadow ? (1.0 - shadow) : 1.0;
+        if (bIsShadow)
+            TotalLight += LightColor * shadowFactor;
+    }
     
+    float4 FinalColor = float4(TotalLight * baseColor.rgb, baseColor.a * TransparencyScalar);
     // 최종 색상 
-    output.color = float4(TotalLight * baseColor.rgb, baseColor.a * TransparencyScalar);
+    output.color = FinalColor;
     return output;  
 }

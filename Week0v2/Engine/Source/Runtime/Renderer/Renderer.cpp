@@ -87,6 +87,11 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
 
     CreateVertexPixelShader(TEXT("HeightFog"), nullptr);
     FogRenderPass = std::make_shared<FFogRenderPass>(TEXT("HeightFog"));
+
+    CreateVertexPixelShader(TEXT("Shadow"), nullptr);
+    ShadowRenderPass = std::make_shared<FShadowRenderPass>(TEXT("Shadow"));
+
+    CreateVertexPixelShader(TEXT("LightDepth"), nullptr);
 }
 
 void FRenderer::PrepareShader(const FName InShaderName)
@@ -240,6 +245,8 @@ void FRenderer::Render(UWorld* World, const std::shared_ptr<FEditorViewportClien
     
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))
     {
+        ShadowRenderPass->Prepare(ActiveViewport);
+        ShadowRenderPass->Execute(ActiveViewport);
         //TODO : FLAG로 나누기
         if (CurrentViewMode  == EViewModeIndex::VMI_Lit_Goroud)
         {
@@ -292,6 +299,7 @@ void FRenderer::ClearRenderObjects() const
     GizmoRenderPass->ClearRenderObjects();
     DebugDepthRenderPass->ClearRenderObjects();
     EditorIconRenderPass->ClearRenderObjects();
+    ShadowRenderPass->ClearRenderObjects();
 }
 
 void FRenderer::SetViewMode(const EViewModeIndex evi)
@@ -368,6 +376,7 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* InWorld) const
     
     GizmoRenderPass->AddRenderObjectsToRenderPass(InWorld);
     EditorIconRenderPass->AddRenderObjectsToRenderPass(InWorld);
+    ShadowRenderPass->AddRenderObjectsToRenderPass(InWorld);
 }
 
 void FRenderer::MappingVSPSInputLayout(const FName InShaderProgramName, FName VSName, FName PSName, FName InInputLayoutName)

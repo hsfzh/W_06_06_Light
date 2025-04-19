@@ -1,8 +1,11 @@
 #pragma once
 #include "Define.h"
 #include "Components/SceneComponent.h"
+#include "Engine/Texture.h"
 #include "UObject/ObjectMacros.h"
-
+#include <wrl/client.h> // Add this include for Microsoft::WRL::ComPtr
+#include <Light/ShadowResource.h>
+using Microsoft::WRL::ComPtr; // Add this using directive to use ComPtr
 struct FLightComponentBaseInfo : public FSceneComponentInfo
 {
     DECLARE_ACTORCOMPONENT_INFO(FLightComponentBaseInfo);
@@ -73,14 +76,33 @@ public:
     void SetIntensity(float InIntensity) { Intensity = InIntensity; }
     bool CanCastShadows() const { return bCastShadows; }
     void SetCastShadows(const bool InbCastShadows) { bCastShadows = InbCastShadows; }
-public:
+
+    //FTexture* GetShadowMap() const { return ShadowMap; }
+    //ID3D11DepthStencilView* GetDSV() const { return DSV; }
+
+    FTexture* GetLightMap() const { return LightMap; }
+    ID3D11RenderTargetView* GetRTV() const { return LightRTV; }
+
+    // virtual void CreateShadowMap();
+
     // duplictae
     virtual UObject* Duplicate() const override;
     virtual void DuplicateSubObjects(const UObject* Source) override;
     virtual void PostDuplicate() override;
-
-public:
+    
     virtual std::shared_ptr<FActorComponentInfo> GetActorComponentInfo() override;
     virtual void LoadAndConstruct(const FActorComponentInfo& Info) override;
+
+protected:
+    //FTexture* ShadowMap = nullptr;
+    //ID3D11DepthStencilView* DSV = nullptr;
+
+    FTexture* LightMap = nullptr;
+    ID3D11RenderTargetView* LightRTV = nullptr;
+
+protected:
+    FShadowResource* ShadowResource = nullptr;
+public:
+    FShadowResource* GetShadowResource() const { return ShadowResource; }
 };
 

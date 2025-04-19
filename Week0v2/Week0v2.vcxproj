@@ -196,7 +196,9 @@
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Define.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\JungleMath.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Matrix.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\Rotator.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Misc\Parse.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ActorEditor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Camera\CameraComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\DirectionalLightActor.cpp" />
@@ -210,28 +212,28 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\GameFramework\MovementComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\GameFramework\ProjectileMovementComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\GameFramework\RotatingMovementComponent.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\DirectionalLightComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\LightComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\LightComponentBase.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\PointLightComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\SpotLightComponent.cpp"/>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\DirectionalLightComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\LightComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\LightComponentBase.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\PointLightComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\LightComponents\SpotLightComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\Material\Material.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\Mesh\StaticMesh.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\ExponentialHeightFogComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\HeightFogComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\MeshComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\CubeComp.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\FireBallComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\SkySphereComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\SphereComp.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\StaticMeshComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\PrimitiveComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\QuadTexture.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UBillboardComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UParticleSubUVComp.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UTextComponent.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UTexture.cpp"/>
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UTextUUID.cpp"/>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\ExponentialHeightFogComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\HeightFogComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\MeshComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\CubeComp.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\FireBallComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\SkySphereComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\SphereComp.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\MeshComponents\StaticMeshComponents\StaticMeshComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\PrimitiveComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\QuadTexture.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UBillboardComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UParticleSubUVComp.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UTextComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UTexture.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\PrimitiveComponents\UTextUUID.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\SceneComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Engine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\FLoaderOBJ.cpp" />
@@ -240,6 +242,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Actor.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Light\ShadowResource.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealClient.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealEngine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UserInterface\Console.cpp" />
@@ -261,6 +264,7 @@
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\FogRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\GizmoRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\LineBatchRenderPass.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ShadowRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\StaticMeshRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderResourceManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\VBIBTopologyMapping.cpp" />
@@ -325,8 +329,11 @@
     <ClInclude Include="Engine\Source\Runtime\Core\Math\MathUtility.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Matrix.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Quat.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Rotator.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Vector4.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Misc\Char.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Misc\Parse.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\AssetDefine.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Camera\CameraComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\DirectionalLightActor.h" />
@@ -375,6 +382,7 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\World.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Actor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\ActorInfo.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Light\ShadowResource.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UnrealClient.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UnrealEngine.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UserInterface\Console.h" />
@@ -398,6 +406,7 @@
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\FogRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\GizmoRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\LineBatchRenderPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ShadowRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\StaticMeshRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderResourceManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\VBIBTopologyMapping.h" />
@@ -485,6 +494,30 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightDepthPixelShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightDepthVertexShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShadowPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShadowVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shaders\TexturePixelShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

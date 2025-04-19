@@ -9,6 +9,7 @@
 #include "Components/GameFramework/ProjectileMovementComponent.h"
 #include "Components/GameFramework/RotatingMovementComponent.h"
 #include <Math/JungleMath.h>
+#include <UObject/UObjectIterator.h>
 
 #include "Components/LightComponents/DirectionalLightComponent.h"
 #include "Components/LightComponents/PointLightComponent.h"
@@ -50,6 +51,8 @@ void PropertyEditorPanel::Render()
     AActor* PickedActor = nullptr; 
     if (!GEngine->GetWorld()->GetSelectedActors().IsEmpty())
             PickedActor = *GEngine->GetWorld()->GetSelectedActors().begin();
+
+    ImVec2 imageSize = ImVec2(128, 128); // 이미지 출력 크기
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
@@ -103,7 +106,7 @@ void PropertyEditorPanel::Render()
                     }
                     PickedComponent = BillboardComponent;
                     BillboardComponent->SetTexture(L"Assets/Texture/Pawn_64x.png");
-                    BillboardComponent->SetLocation(FVector(0.0f, 0.0f, 3.0f));
+                    BillboardComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 3.0f));
                 }
                 //if (ImGui::Selectable("LightComponent"))
                 //{
@@ -146,7 +149,7 @@ void PropertyEditorPanel::Render()
                     PickedComponent = ParticleComponent;
                     ParticleComponent->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
                     ParticleComponent->SetRowColumnCount(6, 6);
-                    ParticleComponent->SetScale(FVector(10.0f, 10.0f, 1.0f));
+                    ParticleComponent->SetRelativeScale(FVector(10.0f, 10.0f, 1.0f));
                     ParticleComponent->Activate();
                 }
                 if (ImGui::Selectable("StaticMeshComponent"))
@@ -209,7 +212,7 @@ void PropertyEditorPanel::Render()
         if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
         {
             Location = SceneComp->GetRelativeLocation();
-            Rotation = SceneComp->GetRelativeRotation();
+            Rotation = SceneComp->GetRelativeRotation().ToVector();
             Scale = SceneComp->GetRelativeScale();
             if (PickedComponent != LastComponent)
             {
@@ -230,9 +233,9 @@ void PropertyEditorPanel::Render()
 
             if (bChanged && !bFirstFrame)
             {
-                SceneComp->SetLocation(Location);
+                SceneComp->SetRelativeLocation(Location);
                 SceneComp->SetRelativeRotation(Rotation);
-                SceneComp->SetScale(Scale);
+                SceneComp->SetRelativeScale(Scale);
             }
             
             //always local
@@ -399,6 +402,14 @@ void PropertyEditorPanel::Render()
                     SpotLight->SetInnerConeAngle(InnerAngle);
                 }
             }
+            ImTextureID LightDepth = reinterpret_cast<ImTextureID>(SpotLight->GetShadowResource()->GetSRV());
+            ImGui::Text("Shadow Map");
+            ImGui::Image(LightDepth, imageSize);
+
+            ImTextureID LightTexture = reinterpret_cast<ImTextureID>(SpotLight->GetLightMap()->TextureSRV);
+
+            ImGui::Text("Light Depth View");
+            ImGui::Image(LightTexture, imageSize);
         }
     }
 
